@@ -62,7 +62,7 @@ Within that rule, match, in this order of importance:
 3. **State** — errors, disabled, active tab/menu item, expanded group, modal open.
 4. **Proportions** — column widths, relative spacing. Table column alignment is **not** taken from
    the reference; it follows the kit map's rule, with the header matching its cells. UpS: left for
-   everything, right for decimal numbers (`kit-maps/ups.md` › Column alignment). A kit map with no
+   everything, right for decimal numbers (`kit-maps/ups-ui-kit.md` › Column alignment). A kit map with no
    rule yet → use the UpS one and say so in the handover.
 
 ## Allowed adjustments

@@ -32,7 +32,8 @@ const userDir = path.join(os.homedir(), '.claude', 'skills');
 const projectDir = path.join(process.cwd(), '.claude', 'skills');
 const target = valueOf('--dir') ? path.resolve(valueOf('--dir')) : has('--project') ? projectDir : userDir;
 
-const skills = fs.readdirSync(srcSkills).filter(d => fs.existsSync(path.join(srcSkills, d, 'SKILL.md')));
+// Every skill folder, plus _shared (no SKILL.md, so Claude Code doesn't load it as a skill).
+const skills = fs.readdirSync(srcSkills).filter(d => d === '_shared' || fs.existsSync(path.join(srcSkills, d, 'SKILL.md')));
 
 function walk(dir) {
   const out = [];
@@ -44,16 +45,36 @@ function walk(dir) {
 }
 
 const stamp = path.join(target, '.upbase-design-skills.json');
-let previous = null;
-try { previous = JSON.parse(fs.readFileSync(stamp, 'utf8')).version; } catch (e) { /* first install */ }
+let previous = null, previousFiles = null;
+try { const st = JSON.parse(fs.readFileSync(stamp, 'utf8')); previous = st.version; previousFiles = st.files || null; } catch (e) { /* first install */ }
 
 console.log(`UpBase design skills ${pkg.version}${previous ? ` (installed: ${previous})` : ''}`);
 console.log(`→ ${target}${dryRun ? '  [dry run]' : ''}\n`);
 
-let added = 0, updated = 0, same = 0;
+// ── Migrate 0.1.x: ub-component-creator was split into design-system-builder, ui-kit-builder and
+// _shared. A team's own kit data file moves to ui-kit-builder/kits/; everything else was shipped.
+const LEGACY_KIT_FILES = ['_template.md', 'gap-log-template.md', 'mode.md', 'patterns.md', 'page-template.md',
+  'subscription.md', 'wrapper-pattern.md', 'ups.md'];
+const legacyDir = path.join(target, 'ub-component-creator');
+if (fs.existsSync(path.join(legacyDir, 'SKILL.md'))) {
+  const kitDir = path.join(legacyDir, 'references', 'kit');
+  const own = fs.existsSync(kitDir) ? fs.readdirSync(kitDir).filter(f => f.endsWith('.md') && !LEGACY_KIT_FILES.includes(f)) : [];
+  for (const f of own) {
+    console.log(`  → moving your kit file ub-component-creator/references/kit/${f} to ui-kit-builder/kits/${f}`);
+    if (!dryRun) { fs.mkdirSync(path.join(target, 'ui-kit-builder', 'kits'), { recursive: true }); fs.renameSync(path.join(kitDir, f), path.join(target, 'ui-kit-builder', 'kits', f)); }
+  }
+  console.log('  - removing ub-component-creator (replaced by design-system-builder + ui-kit-builder)');
+  if (!dryRun) fs.rmSync(legacyDir, { recursive: true, force: true });
+}
+// Files renamed in 0.2.0 that 0.1.x installed without a manifest.
+const LEGACY_REMOVED = ['product-screen-builder/references/kit-maps/ups.md'];
+
+let added = 0, updated = 0, same = 0, removed = 0;
+const shipped = [];
 for (const skill of skills) {
   for (const file of walk(path.join(srcSkills, skill))) {
     const rel = path.relative(srcSkills, file);
+    shipped.push(rel);
     const dest = path.join(target, rel);
     const next = fs.readFileSync(file);
     let state = 'add';
@@ -63,6 +84,16 @@ for (const skill of skills) {
     console.log(`  ${state === 'add' ? '+' : '~'} ${rel}`);
     if (!dryRun) { fs.mkdirSync(path.dirname(dest), { recursive: true }); fs.writeFileSync(dest, next); }
   }
+}
+
+// Files this repo shipped before but no longer does are removed; files you added are not.
+const gone = (previousFiles || LEGACY_REMOVED).filter(rel => !shipped.includes(rel));
+for (const rel of gone) {
+  const dest = path.join(target, rel);
+  if (!fs.existsSync(dest)) continue;
+  removed++;
+  console.log(`  - ${rel}`);
+  if (!dryRun) fs.rmSync(dest);
 }
 
 // Files the user added under these skills (their kit / product data) are left alone — list them
@@ -77,15 +108,15 @@ for (const skill of skills) {
   }
 }
 
-if (!dryRun) fs.writeFileSync(stamp, JSON.stringify({ version: pkg.version, installedAt: new Date().toISOString(), skills }, null, 2) + '\n');
+if (!dryRun) fs.writeFileSync(stamp, JSON.stringify({ version: pkg.version, installedAt: new Date().toISOString(), skills, files: shipped }, null, 2) + '\n');
 
-console.log(`\n${added} added · ${updated} updated · ${same} unchanged`);
+console.log(`\n${added} added · ${updated} updated · ${removed} removed · ${same} unchanged`);
 if (kept.length) console.log(`Kept your own files (not part of the repo):\n${kept.map(k => '  = ' + k).join('\n')}`);
 
 // The same skill in both the user and the project folder loads twice; Claude may pick either.
 const other = target === userDir ? projectDir : target === projectDir ? userDir : null;
 if (other) {
-  const dupes = skills.filter(s => fs.existsSync(path.join(other, s, 'SKILL.md')));
+  const dupes = [...skills, 'ub-component-creator'].filter(s => fs.existsSync(path.join(other, s, 'SKILL.md')));
   if (dupes.length) console.log(`\n⚠ Also installed in ${other}: ${dupes.join(', ')}.\n  Keep one copy — remove the other folder(s), or they load twice and drift apart.`);
 }
 

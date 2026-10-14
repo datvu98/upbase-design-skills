@@ -3,7 +3,7 @@
 > **Scope:** all modes. Every item here cost real rework while building UpS screens, and most fail
 > **silently** — the call succeeds, the report looks fine, and the canvas (or the next call) is
 > wrong. Read before the first write. The component-level traps (making slots, variants, wrappers)
-> live in `ub-component-creator`'s `references/figma-api-gotchas.md`; this file is what matters when
+> live in `_shared/references/figma-api-gotchas.md`; this file is what matters when
 > you only *use* components.
 
 ## Contents

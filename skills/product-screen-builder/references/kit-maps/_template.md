@@ -2,7 +2,7 @@
 
 > **Template.** Copy to `references/kit-maps/<kit-slug>.md` and fill it as screens get built — it
 > starts nearly empty and grows. One kit map serves every product file that consumes that kit.
-> `kit-maps/ups.md` is the filled example: copy its shape and its *kinds* of rules, never its keys.
+> `kit-maps/ups-ui-kit.md` is the filled example: copy its shape and its *kinds* of rules, never its keys.
 >
 > **Scope:** product files consuming <Kit name> (`<kit file key>`). What to reach for per screen
 > region, how to import it, and which property keys to set.

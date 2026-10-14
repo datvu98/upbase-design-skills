@@ -1,13 +1,13 @@
 ---
 name: product-screen-builder
-description: Rebuild, annotate or redesign product screens in UpBase product design files — UpS Product 2026 (`9FAdrUvuA7q0VExwsAxNu6`, consuming UpS UI Kit) and any other product file registered under `references/products/` — assembled only from kit component instances. Use this whenever the user wants to recreate or redraw a screen from a screenshot or reference image, "build the screen under Kho hàng", map a screen's anatomy to kit components, draw callouts naming the components on a screenshot, rebuild a flow's variants (error states, modal states, tabs), or make an improved / "tasteful" / proposal version of an existing screen with Mobbin references — even if they only paste a Figma link to a product file or name a module (Kho hàng, Đơn hàng, Tồn kho…). Also use it to log where the kit can't match a product screen. Do NOT use it to create or change components themselves — that is `ub-component-creator`, which this skill hands off to.
+description: Rebuild, annotate or redesign product screens in UpBase product design files — UpS Product 2026 (`9FAdrUvuA7q0VExwsAxNu6`, consuming UpS UI Kit) and any other product file registered under `references/products/` — assembled only from kit component instances. Use this whenever the user wants to recreate or redraw a screen from a screenshot or reference image, "build the screen under Kho hàng", map a screen's anatomy to kit components, draw callouts naming the components on a screenshot, rebuild a flow's variants (error states, modal states, tabs), or make an improved / "tasteful" / proposal version of an existing screen with Mobbin references — even if they only paste a Figma link to a product file or name a module (Kho hàng, Đơn hàng, Tồn kho…). Also use it to log where the kit can't match a product screen. Do NOT use it to create or change components themselves — that is `ui-kit-builder` (or `design-system-builder` for UpBase itself), which this skill hands off to.
 ---
 
 # Product screen builder
 
 Paths in this skill are relative to its own directory, `${CLAUDE_SKILL_DIR}`. It needs
-`ub-component-creator` installed beside it (same `skills/` folder): the changelog script and the gap
-log template live there, at `${CLAUDE_SKILL_DIR}/../ub-component-creator/`.
+the shared folder installed beside it (`${CLAUDE_SKILL_DIR}/../_shared/`, where the changelog script
+lives) and `ui-kit-builder` (its `kits/_gap-log-template.md`).
 
 Screens in a product file are **compositions of kit instances**, never components. The kit
 decides how every part looks; this skill decides which parts, how they're configured, and how
@@ -15,12 +15,12 @@ they're arranged — and records every place the kit can't do what the screen ne
 
 ```
 UpBase Design System ──▶ <product> UI Kit ──▶ <product> design file   ← this skill writes here
-      (source)               (kit)               (product file)
+      (library)              (kit)               (product file)
 e.g.                        UpS UI Kit          UpS Product 2026
 ```
 
 If the work means **changing a component** (adding a slot, a variant, a property), stop and hand
-it to `ub-component-creator` with a written proposal. Building a screen around a kit limitation by
+it to `ui-kit-builder` (or, for a UpBase atom, `design-system-builder`) with a written proposal. Building a screen around a kit limitation by
 hand-drawing the missing part is the one thing this skill must not do — the drawing is invisible
 to every other screen and silently drifts from the kit.
 
@@ -30,7 +30,7 @@ to every other screen and silently drifts from the kit.
 
 | File key | Product | Consumes | Read |
 |---|---|---|---|
-| `9FAdrUvuA7q0VExwsAxNu6` | UpS Product 2026 | UpS UI Kit `9c052aEvpV7gYLhwdatf6g` | `references/products/ups-product-2026.md`, `references/kit-maps/ups.md` |
+| `9FAdrUvuA7q0VExwsAxNu6` | UpS Product 2026 | UpS UI Kit `9c052aEvpV7gYLhwdatf6g` | `references/products/ups-product-2026.md`, `references/kit-maps/ups-ui-kit.md` |
 A product file is **registered by its data file**: a file in `references/products/` (other than
 `_template.md`) whose **File key** row holds the target key — `grep -l "<file key>"
 ${CLAUDE_SKILL_DIR}/references/products/*.md`. The table above lists the ones known when this skill
@@ -96,7 +96,7 @@ things are a slot fill, a variant, or a component under another name.
 Anything the kit genuinely can't express is a **gap**. Check the kit's gap log first — it may
 already be logged with an agreed workaround. Its path is the **Gap log** row of the product data
 file (UpS: `docs/kit-gaps/ups.md` in the design repo; a new kit starts from the plugin's
-`${CLAUDE_SKILL_DIR}/../ub-component-creator/references/kit/gap-log-template.md`).
+`${CLAUDE_SKILL_DIR}/../ui-kit-builder/kits/_gap-log-template.md`).
 
 ## Step 4 — Proposal, then stop
 
@@ -110,7 +110,7 @@ batch only. Template:
 **Anatomy** — region → kit component (settings) · content, one line each
 **Layout** — structure and the spacing tokens it binds
 **Gaps** — each place the kit can't match, the workaround, and GAP id (new or existing)
-**Needs a kit change?** — anything that should go to ub-component-creator instead
+**Needs a kit change?** — anything that should go to ui-kit-builder (or design-system-builder) instead
 **Questions** — only real decisions, with a recommendation
 ```
 
@@ -160,7 +160,7 @@ existing ones you hit. Then report, in this order:
 Update the screen register in the product data file (screen → node id → status).
 
 Then log the session on the product file's `Changelog` page: paste
-`${CLAUDE_SKILL_DIR}/../ub-component-creator/scripts/changelog/changelog.js` into `figma_execute` with the product `fileKey` and call
+`${CLAUDE_SKILL_DIR}/../_shared/scripts/changelog/changelog.js` into `figma_execute` with the product `fileKey` and call
 `addChangelogEntry({ …, status: null, saveVersion: true })`. Name each screen or Global rules
 section you added or changed and link its node. If the work sent a fix upstream to the kit or
 UpBase, cross-link that file's entry under `related`. Anatomy-only sessions that change no
@@ -186,7 +186,7 @@ judgement call.
 
 ## Boundaries
 
-- **Components** are `ub-component-creator`'s. This skill never creates a component, detaches an
+- **Components** belong to `ui-kit-builder` and `design-system-builder`. This skill never creates a component, detaches an
   instance, or rebuilds a component's internals to get a look.
 - **UpBase-direct instances** are allowed only for icons swapped through a kit component's own
   instance-swap property (the kit publishes no icons). Say so in the handover.

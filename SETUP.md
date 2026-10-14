@@ -66,7 +66,7 @@ curl -s -o /dev/null -w "%{http_code}\n" -H "X-Figma-Token: $FIGMA_ACCESS_TOKEN"
 | File | You need | Why |
 |---|---|---|
 | **UpBase Design System** `BoGaG48v9BfY7LkMtFs4zh` | **enabled as a library** in your kit file | wrappers nest UpBase components and bind its variables |
-| UpBase Design System | **open in Desktop Bridge** while building | Kit mode searches UpBase through the plugin before building anything (Step 2) |
+| UpBase Design System | **open in Desktop Bridge** while building | `ui-kit-builder` searches UpBase through the plugin before building anything (Step 2) |
 | your kit file | edit | the skill writes here |
 | your product file(s) | edit, with your kit enabled as a library | `product-screen-builder` writes here |
 
