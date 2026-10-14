@@ -25,10 +25,19 @@ The single `ub-component-creator` skill is split by file, so each skill's name s
 - The installer records a manifest of the files it installed, so files later dropped from the repo
   get removed on update. Files you added are never removed.
 
-**Still to do**
-- `design-system-builder` has an interim SKILL.md; `references/workflow.md` is the old phase detail
-  and will be trimmed.
-- `product-screen-builder` gets the same step-by-step rewrite.
+- `product-screen-builder/SKILL.md` was rewritten on the same Step 0–7 route. Anatomy mode moved to
+  `references/anatomy-mode.md`.
+- `design-system-builder/SKILL.md` is the route through `references/workflow.md`. The parts it
+  shared with the kit skill now point to `_shared/references/conventions.md`.
+- `ui-kit-builder/kits/ups-ui-kit.md`: page list refreshed from the file (73 pages, mostly UpBase
+  names now).
+- `ui-kit-builder` Step 2 also reads the kit's gap log and the product's recent changelog.
+
+**Tested**
+- `evals/`: dry-run prompts for each skill (read-only, they stop at the proposal). `ui-kit-builder`
+  was run against 0.1.0's `ub-component-creator` on 5 prompts: 100% vs 95% of checks passed, with
+  ~25% fewer tokens. The only difference is routing: the new skill sends UpBase-file work to
+  `design-system-builder`.
 
 ## 0.1.0 — 2026-10-14
 

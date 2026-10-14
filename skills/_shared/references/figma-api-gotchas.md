@@ -685,3 +685,10 @@ The Desktop Bridge plugin drops out (Figma suspends plugins when the tab loses f
 "Cannot connect to Figma Desktop". Ask the user to reopen Plugins → Development → Figma Desktop
 Bridge; nothing is lost, since a failed `figma_execute` is atomic. On long builds, tell them to keep
 the plugin window visible.
+
+**A loop that never ends hangs the plugin, and only the user can recover it.** A `while` walking
+`.parent` or a recursive walk without a depth bound can spin forever inside `figma_execute`. The call
+times out, but the plugin in that file stays busy and every later call to it times out too, until the
+user closes and reopens the Desktop Bridge. Bound every loop (`for (let i = 0; p && i < 50; i++)`),
+and prefer `findAllWithCriteria` on one loaded page over walking the whole document in a large file
+such as UpBase.

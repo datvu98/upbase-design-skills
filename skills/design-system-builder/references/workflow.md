@@ -5,9 +5,9 @@
 > styles up by name, never import by key. If the target is a product kit instead, use
 > `ui-kit-builder`.
 >
-> **Interim file.** This is the phase-by-phase detail behind `SKILL.md`, carried over from the old
-> `ub-component-creator`. Its shared rules now also live in `_shared/references/conventions.md`,
-> which wins where the two differ. It will be trimmed in the design-system-builder rewrite.
+> `SKILL.md` is the route; this file is the detail behind its Steps 2–5. Open the phase you're in.
+> Rules every skill shares (platforms, variant count, states, contrast, tokens, raw values, the
+> description format) live in `_shared/references/conventions.md` and are only pointed to here.
 
 Preamble is `scripts/helpers.js`. Using the kit's `ui-kit-builder/scripts/resolve-remote.js` here
 resolves nothing and says so quietly.
@@ -80,34 +80,9 @@ lookup by name all work normally. Look assets up **by name**; never import by ke
 
 ### Two targets: Web · Mobile
 
-**iOS and Android are one target.** One design, one set, one description — the same components ship
-to both. There is no per-OS exception list, and a `Platform` axis never splits iOS from Android.
-
-Earlier versions of this skill sanctioned five iOS-vs-Android splits — `Switch`, `Alert Dialog`,
-`Date Picker`, touch feedback, elevation. **That list is retired.** Each of those renders one way on
-both platforms now. An OS convention that merely *suggests* a difference is not grounds to fork a
-component; if one ever genuinely blocks shipping, raise it as a conversation rather than splitting
-the set on the page. A set still carrying a `Platform=iOS/Android` axis predates this rule — it is a
-merge candidate, not a pattern to copy.
-
-**Web vs mobile is still a real question**, and it is the decision the architecture turns on,
-replacing the old "which file?" routing. It is answered in one of three ways:
-
-| The difference is… | Handle it with | Example |
-|---|---|---|
-| **Measurement only** — height, radius, type size, spacing | a **variable**, resolved by mode | `controlHeight` 32 at Default vs 28 at Compact |
-| **Anatomy** — same concept, genuinely different construction | a **`Platform` variant axis** on that set | `Select` as a web dropdown popover vs a mobile bottom sheet |
-| **Concept** — exists on one platform only | a **separate component**, its own name and page | `Tab Bar`, `Action Sheet`, `Swipe Action` · `Menu`, `Breadcrumb`, `Anchor` |
-
-Prefer the row above the one you're reaching for. A `Platform` axis multiplies the variant count, so
-it is only affordable on small sets — `Button / Basic` already has 7 axes and **960 variants** and
-must stay in row 1. Never add a `Platform` axis to a set over ~100 variants. Where one is warranted
-its options are **`Web` and `Mobile`** — never `iOS` or `Android`.
-
-> **Density has two modes only: `Default / Compact`**, on `2. Dimensions` and `3. Typography`. There
-> is no touch-density mode, so a native control that needs a 44pt target carries that number as a
-> raw value with a stated reason — see the raw-value rule in Phase 3. Row 1 still applies to
-> everything density *does* cover.
+`_shared/references/conventions.md` › *Platforms*: iOS and Android are one target, and a web/mobile
+difference is a variable, a `Platform` axis or a separate component, in that order. Density is a
+mode (`Default` / `Compact`), never an axis.
 
 ---
 
@@ -334,42 +309,10 @@ else belongs in instance properties: booleans for optional elements, `INSTANCE_S
 
 ### The State vocabulary is fixed
 
-Anything a user can interact with carries a `State` axis with **all four** of:
-
-```
-Default · Hover · Focused · Disabled
-```
-
-plus **`Pressed`** when the thing is actually pressed — a button, link, tab or menu option.
-`Button / Basic` carries all five across its 960 variants and is the anchor the rest of the library
-is measured against.
-
-Dropping `Focused` is the common shortcut and it is a **keyboard-accessibility gap**, not a
-simplification — 25 sets in this library are currently missing one of the four. But don't over-apply
-either: a `Checkbox` has no distinct pressed state and an `Input` uses `Typing` / `Filled` instead,
-so `Pressed` is not demanded of them.
-
-Extend only where the component genuinely has more:
-
-| Component kind | Add |
-|---|---|
-| Text entry | `Typing` · `Filled` |
-| Anything asynchronous | `Loading` |
-| Selectable | `Selected` — or `Active` for a persistent on/off |
-| Navigation | `Current` — "you are here" |
-
-**`Pressed` and `Active` are not the same thing and must not be merged.** `Pressed` is transient —
-the pointer is down right now — and is what `Button`, `Dropdown`, `Pagination`, `Slider`, `Switch`
-and `Upload` use. `Active` is persistent — this item *is* the selected or switched-on one — and is
-what `Radio / Radio Button` and `X / Sender` use. A component can legitimately have both.
-
+`_shared/references/conventions.md` › *The State vocabulary*. `Button / Basic` carries all five
+states across its 960 variants and is the anchor the rest of the library is measured against.
 Coining a new state value is a decision to raise, not to make on the page: the library already
-carries 30 distinct values across 106 sets, including one typo that shipped.
-
-This restraint is not stylistic. `Button / Basic` in this library has 7 axes and **960 variants**,
-which is why its sibling `Button / Variant (optional)` shipped with a single-value State axis —
-nobody wanted to multiply it further. Making a status indicator a *swapped component* rather than a
-fifth axis kept one component at 8 variants instead of 40.
+carries 30 distinct values across 106 sets.
 
 ### Before you draw anything: the reuse checkpoint
 
@@ -440,18 +383,9 @@ naively produces solid black, because the variable's alpha does not transfer to 
 
 ### The raw-value rule: nothing raw that isn't explained
 
-Some values genuinely have no token — a pill radius that must be height ÷ 2, a 2px optical gap, a
-negative overlap, a panel width, a 44pt touch target on a native control. `2. Dimensions` has no
-token for 2, 6, 7 or 10, and no touch-density mode, so forcing a semantically wrong token
-(`borderRadiusXS` used as a gap because both equal 2) is worse than an honest raw value.
-
-So the standard is **not "no raw values"** — it is:
-
-> **No raw value without a stated reason.** Every one goes in the `Raw values` block of the
-> component description, with the value and why no token fits.
-
-That is what makes the distinction auditable. An unexplained raw value is a defect; an explained one
-is a decision, and `_shared/scripts/audit-coverage.js` reports the remainder so you can account for each.
+`_shared/references/conventions.md` › *The raw-value rule*. `2. Dimensions` has no token for 2, 6, 7
+or 10 and no touch-density mode, so an honest raw value with a reason beats a semantically wrong
+token.
 
 ### Build it so it can be made narrow
 
@@ -525,78 +459,12 @@ Screenshot-iterate at most three rounds, then hand over the judgement calls you 
 header; everything else a reader or an audit needs — including the changelog — is here. One place,
 so there is nothing to keep in sync.
 
-Every set ships with this, in this order:
+The format, the responsive verbs and the breakpoint values are in
+`_shared/references/conventions.md` › *The component description* and *Responsive declarations*.
+Two things specific to this file:
 
-```
-<One-line summary of what it is.>
-
-**When to use**
-
-- <guidance, and when to reach for something else instead>
-
-**Properties**
-
-Variants
-
-- Axis — Option · Option · Option
-
-Instance properties
-
-- Name — text
-- Show Thing — boolean, default true
-
-**Responsive**
-
-Web: <992 stack · <768 swap → List View
-Native: Compact stack
-
-Reviewed: yes — <one line on what actually changes, or why nothing does>
-
-**Raw values**
-
-- 10 — pill radius, must be height ÷ 2; no token
-- 44 — native touch target; no touch-density mode exists
-
-**Search metadata**
-
-<keywords — the alternative names from the vocabulary table in Phase 0b>
-```
-
-Four rules that keep it machine-checkable:
-
-- **Generate the Properties block** from `componentPropertyDefinitions` rather than typing it, so it
-  can't drift — `scripts/helpers.js` → `propsBlock()`.
-- **Omit `Responsive` lines that say nothing.** `reflow` is the silent default; only write a
-  breakpoint where something changes. `Reviewed:` is always present, including when there is nothing
-  above it — that is what separates "looked at it" from "nobody has".
-- **Use only these nine verbs.** Free prose is unreadable across 68 components and uncheckable by
-  any script. If a behaviour doesn't fit one, raise it and extend this list rather than inventing a
-  phrase no script will match:
-
-  | Verb | Means |
-  |---|---|
-  | `reflow` | Layout holds, container narrows — **the implicit default, never written** |
-  | `stack` | Horizontal → vertical |
-  | `collapse` | Full → icon-only or summary |
-  | `scroll-x` | Content scrolls horizontally, container stays put |
-  | `swap → <Component>` | Replaced by a different component entirely |
-  | `dock` | Moves to a fixed edge — bottom or top |
-  | `hide` | Removed |
-  | `truncate` | Ellipsised |
-  | `paginate` | Split across pages or steps |
-
-  Web breakpoints are written `<N` or `≥N` using only the six Ant values (480 · 576 · 768 · 992 ·
-  1200 · 1600). A `Native:` line uses window size class names — `Compact` (<600) · `Medium`
-  (600–840) · `Expanded` (>840) — never pixels. Separator is ` · ` throughout;
-  `_shared/scripts/audit-platform.js` parses on it. For a `swap →` target, name the
-  replacement component explicitly; there is no lookup table for this.
-- **Every entry under `Raw values` must match something `_shared/scripts/audit-coverage.js` reports.** An unlisted
-  raw value is a defect; a listed one is a decision.
-- **`Search metadata` is not decoration.** Figma's asset search matches descriptions, so this is what
-  makes `Spin` findable by "activity indicator" and stops someone building a second one.
-
-Insert new sections **before** any `**Code example**` block, not after — Figma eats the newline after
-a closing code fence and the block welds onto it. See `_shared/references/figma-api-gotchas.md`.
+- **Generate the Properties block** with `scripts/helpers.js` → `propsBlock()`, so it can't drift.
+- **Every entry under `Raw values` must match** what `_shared/scripts/audit-coverage.js` reports.
 
 ### The page is part of the deliverable
 
@@ -623,34 +491,9 @@ there in the first place and you get verification and documentation from one pie
 
 ## Handing over
 
-Report honestly, and separate these three:
-
-- **What's verified** — with the evidence (coverage numbers, contrast ratios, modes tested).
-- **What's deliberately raw or omitted** — and why, so it doesn't read as an oversight.
-- **Judgement calls you couldn't make** — optical nudges, whether a colour reads right, anything
-  needing the user's eye.
-
-Publishing is always the user's action; you cannot publish, and descriptions don't reach consumers
-until they do. The chain is now one hop:
-
-```
-library edited → publish UpBase Design System → product files accept the update
-```
-
-Say plainly that nothing you built is visible to any product designer until that publish happens,
-and that a rename or a description change needs it just as much as a visual one.
+`SKILL.md` › *Step 6*: the breaking-change check, the changelog entry, known issues, and the report.
+Every product kit consumes this file, so the publish chain has two hops after yours.
 
 ## Reference files
 
-- `references/foundations.md` — current token collections, styles, breakpoints, reusable components, component inventory
-- `_shared/references/tokens.md` — **which token to reach for**: antd's own description per global token, keyed to this file's paths, plus the confusable pairs
-- `references/page-template.md` — in-page structure for a component page: doc frame, playground, label layer, density scale
-- `_shared/references/figma-api-gotchas.md` — the API traps that fail silently; read before writing plugin code
-- `_shared/references/verification.md` — mode sweep, breakpoint sweep, stress cases, coverage audit procedure
-- `_shared/scripts/preflight.js` — **run first, before any node**: proves the file, the mode and that no timed-out call left work behind
-- `scripts/helpers.js` — paste-in preamble: `paintVar`, `bindNum`, `icon`, `contrast`, `propsBlock`
-- `scripts/audit-system.js` — enumerate all styles, collections and modes
-- `_shared/scripts/audit-coverage.js` — token/style coverage report for a page
-- `_shared/scripts/audit-platform.js` — validates responsive declarations: vocabulary, breakpoint values, and whether an example frame proves each one
-- `_shared/scripts/check-reflow.js` — **writes then cleans up**: narrows a component and stresses its text to find content that escapes its own bounds
-- `_shared/scripts/audit-reuse.js` — **hand-built elements a component already covers, and components too weak to reuse**; run it first when refactoring an existing page
+`SKILL.md` › *Reference map*.

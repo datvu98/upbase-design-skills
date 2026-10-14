@@ -20,11 +20,17 @@ page and re-read ids before trusting anything below.
 
 | Page (id) | Holds |
 |---|---|
+| `Thumbnail` (`9:200`) | file cover |
+| `References` (`5:175`) | the user's scratch and reference area (was `_Playground`) — don't write here |
+| `Global rules` (`166:78891`) | cross-screen rules and worked examples (Form Actions, Content max width, Link vs Button Link…) |
+| `Changelog` (`214:220882`) | the file's changelog — written by `_shared/scripts/changelog/changelog.js` |
+| `Design Specs` (`0:1`) | — |
 | `🏠 Kho hàng` (`1:2`) | empty — the module's cover |
 | `↳ Specifications` (`40:65227`) | references, faithful rebuilds and anatomy — **this skill's working page** |
-| `↳ Playground` (`40:65228`) | `Test / Proposal` (`41:87518`) — Proposal mode output |
-| `📦 Đơn hàng` (`40:55288`) | next module group (empty) |
-| `_Playground` (`5:175`) | the user's scratch area — don't write here |
+| `↳ Playground` (`40:65228`) | Proposal-mode output. Found **empty** on 2026-10-14 — the earlier `Test / Proposal` section and the Kho hàng 01 proposal (`41:87519`) are gone; ask before assuming they exist |
+| `📝 Chat` (`40:55288`) | next module (was `📦 Đơn hàng`), with its own `↳ Specifications` (`41:90564`) and `↳ Playground` (`41:90565`) |
+
+Page list re-read 2026-10-14. Re-read it (`figma.root.children`) before trusting a page name.
 
 Sections on `↳ Specifications`:
 
@@ -52,7 +58,7 @@ Reference images are RECTANGLEs named `image N` in `Product images`. Order = lef
 
 | # | Reference | Rebuild | Notes |
 |---|---|---|---|
-| 01 | `40:65230` (image 1) | `40:65276` Kho hàng 01 — Danh sách kho | List; GridTable 8 cols × 6 rows (2026-10-07: + "Thao tác" — `Action Cell` frame per row with `Button / Basic` Default · Small · text "Cập nhật", top-aligned, FIXED 104, on the user's request); Pagination More below the table. Proposal: `41:87519` on `↳ Playground` |
+| 01 | `40:65230` (image 1) | `40:65276` Kho hàng 01 — Danh sách kho | List; GridTable 8 cols × 6 rows (2026-10-07: + "Thao tác" — `Action Cell` frame per row with `Button / Basic` Default · Small · text "Cập nhật", top-aligned, FIXED 104, on the user's request); Pagination More below the table. Proposal `41:87519` no longer exists (2026-10-14) |
 | 02 | `40:65231` (image 2) | `40:65672` Kho hàng 02 — Thêm kho | Create form: 2 Cards; base for 03–07 |
 | 03 | `40:65232` (image 3) | `40:65732` · Kho dịch vụ | + supplier/warehouse selects; Tên kho error; no Cấu hình card |
 | 04 | `40:65233` (image 4) | `40:65778` · Kho đối tác | same + Cấu hình card |

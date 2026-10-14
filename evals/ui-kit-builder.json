@@ -1,0 +1,69 @@
+{
+  "skill_name": "ui-kit-builder",
+  "note": "Dry runs: every prompt is run read-only and stops at the proposal. They need Figma Desktop with the Desktop Bridge open in UpS UI Kit, UpBase Design System and (eval 3) an unregistered kit.",
+  "evals": [
+    {
+      "id": 1,
+      "name": "existing-component-found-in-kit",
+      "prompt": "Can you wrap UpBase's Segmented into our UpS kit as SegmentedButton? https://www.figma.com/design/9c052aEvpV7gYLhwdatf6g/UpS-UI-Kit",
+      "expected_output": "Identifies UpS UI Kit from the key, reads ups-ui-kit.md, enumerates the kit and finds the existing SegmentedButton page/component before proposing anything; either reports it already exists or proposes a fix to it. Does not build.",
+      "assertions": [
+        "Identified the kit by its file key and read the UpS kit data file",
+        "Enumerated the kit's own components before searching or proposing",
+        "Reported that SegmentedButton (or a Segmented wrapper) already exists in the kit, rather than proposing a new duplicate",
+        "Created or modified nothing in Figma"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "composition-proposal-with-variant-math",
+      "prompt": "UpS list screens need a bulk action bar: it shows up when table rows are selected, says 'Đã chọn 3 mục', has a few action buttons (Xuất file, Xoá) and a 'Bỏ chọn' link. Build it as a component in UpS UI Kit (9c052aEvpV7gYLhwdatf6g).",
+      "expected_output": "Ran preflight in kit mode, enumerated the kit, searched UpBase through the plugin, then posted a proposal that names kit components to nest (kit Button, kit Link), gives the variant count before → after, puts actions in a slot/booleans rather than variants, and stops for approval.",
+      "assertions": [
+        "Ran preflight with mode 'kit' and the UpS file key",
+        "Searched the kit's own components before UpBase",
+        "Proposal nests kit components (e.g. the kit's Button and Link wrappers), not UpBase originals",
+        "Proposal states a variant count, before → after",
+        "Variable actions are a SLOT or instance properties, not a variant axis",
+        "Stopped and asked for approval before building; nothing created in Figma"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "unregistered-kit-stops",
+      "prompt": "Add a Rating component to our kit please — https://www.figma.com/design/aNp9zYd1UGt4Ka7CblDEFN/UpBeauty-UI-Library",
+      "expected_output": "Finds no data file for aNp9zYd1UGt4Ka7CblDEFN, stops, explains the kit isn't registered, offers to register it from kits/_template.md and asks the user for the decisions (platform reach, naming, owner) — does not borrow UpS's data and does not build.",
+      "assertions": [
+        "Looked for a data file matching the file key and found none",
+        "Said the kit is not registered and offered to register it from the template",
+        "Asked the user for the template decisions (e.g. platform reach, naming, owner) instead of filling them in itself",
+        "Did not use UpS's data file, node ids or conventions for this kit",
+        "Created or modified nothing in Figma"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "routes-upbase-atom-fix-away",
+      "prompt": "The UpBase Badge clips '99+' because it has no min width. Please fix it — the design system file is https://www.figma.com/design/BoGaG48v9BfY7LkMtFs4zh/UpBase-Design-System",
+      "expected_output": "Recognises the target is the UpBase Design System file, says this is design-system-builder's job (not the kit skill), and does not attempt the fix through kit rules.",
+      "assertions": [
+        "Recognised the target file is the UpBase Design System, not a kit",
+        "Routed the request to design-system-builder (or said this skill doesn't handle the UpBase file)",
+        "Did not apply kit-mode rules (wrapping, import by key) to the UpBase file",
+        "Created or modified nothing in Figma"
+      ]
+    },
+    {
+      "id": 5,
+      "name": "refuses-kit-override-of-atom",
+      "prompt": "In the UpS kit, the selected item in Menu / Sidebar shows UpBase's orange background. I want it grey. Just override the fill on the nested items in the kit, quickest way.",
+      "expected_output": "Explains that overriding an atom's colour on nested UpBase instances in the kit doesn't survive in product files, recommends the change in UpBase (itemSelectedBg token) instead, and checks whether that UpBase change already exists / is pending (known issues says itemSelectedBg moved to colorFillSecondary on 2026-10-01). Does not apply the override.",
+      "assertions": [
+        "Explained that an override on nested UpBase instances in the kit does not survive in product files",
+        "Recommended fixing it upstream in UpBase (the Menu itemSelectedBg token) rather than in the kit",
+        "Noted that UpBase already changed itemSelectedBg to a neutral fill (2026-10-01), so the kit may just need to accept the UpBase publish",
+        "Did not apply the override; nothing created or modified in Figma"
+      ]
+    }
+  ]
+}

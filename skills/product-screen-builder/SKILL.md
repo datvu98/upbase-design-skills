@@ -1,195 +1,176 @@
 ---
 name: product-screen-builder
-description: Rebuild, annotate or redesign product screens in UpBase product design files — UpS Product 2026 (`9FAdrUvuA7q0VExwsAxNu6`, consuming UpS UI Kit) and any other product file registered under `references/products/` — assembled only from kit component instances. Use this whenever the user wants to recreate or redraw a screen from a screenshot or reference image, "build the screen under Kho hàng", map a screen's anatomy to kit components, draw callouts naming the components on a screenshot, rebuild a flow's variants (error states, modal states, tabs), or make an improved / "tasteful" / proposal version of an existing screen with Mobbin references — even if they only paste a Figma link to a product file or name a module (Kho hàng, Đơn hàng, Tồn kho…). Also use it to log where the kit can't match a product screen. Do NOT use it to create or change components themselves — that is `ui-kit-builder` (or `design-system-builder` for UpBase itself), which this skill hands off to.
+description: Build, annotate or redesign product screens in a UpBase product design file (UpS Product 2026, or any product registered under references/products/), assembled only from the product's UI kit instances. Use it to recreate a screen from a screenshot or reference image ("rebuild this screen", "build the screens under Kho hàng"), rebuild a flow's states (errors, modals, tabs), map a screen's anatomy to kit components or draw callouts naming them, make an improved / "tasteful" / proposal version of an existing screen with Mobbin references, or log where the kit can't match a screen. Use it whenever someone pastes a product file link or names a product module, even without saying "screen". Do not use it to create or change components: kit components are ui-kit-builder, UpBase components are design-system-builder.
 ---
 
 # Product screen builder
 
-Paths in this skill are relative to its own directory, `${CLAUDE_SKILL_DIR}`. It needs
-the shared folder installed beside it (`${CLAUDE_SKILL_DIR}/../_shared/`, where the changelog script
-lives) and `ui-kit-builder` (its `kits/_gap-log-template.md`).
-
-Screens in a product file are **compositions of kit instances**, never components. The kit
-decides how every part looks; this skill decides which parts, how they're configured, and how
-they're arranged — and records every place the kit can't do what the screen needs.
+Screens in a product file are **compositions of kit instances**, never components. The kit decides
+how every part looks. This skill decides which parts, how they're configured and arranged, and
+records every place the kit can't do what the screen needs.
 
 ```
-UpBase Design System ──▶ <product> UI Kit ──▶ <product> design file   ← this skill writes here
-      (library)              (kit)               (product file)
-e.g.                        UpS UI Kit          UpS Product 2026
+UpBase Design System ──publish──▶ product UI kit ──publish──▶ product design files
+design-system-builder               ui-kit-builder              product-screen-builder
 ```
 
-If the work means **changing a component** (adding a slot, a variant, a property), stop and hand
-it to `ui-kit-builder` (or, for a UpBase atom, `design-system-builder`) with a written proposal. Building a screen around a kit limitation by
-hand-drawing the missing part is the one thing this skill must not do — the drawing is invisible
-to every other screen and silently drifts from the kit.
+| The request is about… | Skill |
+|---|---|
+| a screen, a flow, an anatomy, a redesign | **this skill** |
+| a component the kit lacks, or a kit component that needs a slot, variant or property | `ui-kit-builder` |
+| how a UpBase atom looks | `design-system-builder` |
 
-## Step 0 — Resolve the product and the mode
+**Never hand-draw what the kit is missing.** The drawing is invisible to every other screen and
+silently drifts from the kit. Log it as a gap and hand the component change to `ui-kit-builder`.
 
-**Product** comes from the file key of the write target, not from the module name.
+Paths below are relative to this skill's folder (`${CLAUDE_SKILL_DIR}`). Shared files are in
+`${CLAUDE_SKILL_DIR}/../_shared/`, shortened here to `_shared/`.
 
-| File key | Product | Consumes | Read |
+## Step 0: Which product, which mode?
+
+The product is identified by the **file key** of the write target, never by a module name. Find its
+data file:
+
+```
+grep -l "<file key>" ${CLAUDE_SKILL_DIR}/references/products/*.md
+```
+
+- **One match**: read it, then the kit map it names (`references/kit-maps/<kit>.md`). The data file
+  holds the pages and sections, the screen register, the shared shell, harvested tokens and the gap
+  log path. UpS Product 2026 (`9FAdrUvuA7q0VExwsAxNu6`) → `products/ups-product-2026.md` +
+  `kit-maps/ups-ui-kit.md`.
+- **No match**: not registered. Stop and offer to register it with the user from
+  `references/products/_template.md` (and `kit-maps/_template.md` for a new kit). Never borrow UpS's
+  data: its node ids, keys and harvested tokens are wrong in any other file.
+- **A kit or the UpBase key**: wrong skill (table above).
+
+**The mode** comes from what the user asked for. Unsure between Rebuild and Proposal? Ask: they have
+opposite rules about matching the reference.
+
+| Mode | The user says | Output | Read |
 |---|---|---|---|
-| `9FAdrUvuA7q0VExwsAxNu6` | UpS Product 2026 | UpS UI Kit `9c052aEvpV7gYLhwdatf6g` | `references/products/ups-product-2026.md`, `references/kit-maps/ups-ui-kit.md` |
-A product file is **registered by its data file**: a file in `references/products/` (other than
-`_template.md`) whose **File key** row holds the target key — `grep -l "<file key>"
-${CLAUDE_SKILL_DIR}/references/products/*.md`. The table above lists the ones known when this skill
-was written; a team adds a product by adding one file (and a kit map under `references/kit-maps/` if
-it consumes a different kit), and those files survive updates. **A file key with no data file is
-not registered** — stop and ask the user to register it (README › *Registering your kit*) rather than
-borrowing UpS's data file; UpS's keys, ids and harvested tokens are wrong in any other file.
+| **Rebuild** | "rebuild / recreate / redraw this screen", "build the screens under X" | a faithful screen of kit instances | `references/rebuild-mode.md` |
+| **Proposal** | "improve", "make it tasteful", "redesign", "what can we do better" | an improved screen beside the faithful one | `references/proposal-mode.md` |
+| **Anatomy** | "draw the anatomy", "which components is this" | labelled callouts on a copy of the reference | `references/anatomy-mode.md` |
 
-The UpS files are the **worked example**: when a template field is unclear, look at how the UpS
-data file fills it.
+**In every mode, content comes from the reference and form comes from the component.** Keep every
+word, value and state the reference shows. Each kit component keeps its own parts and styles: a
+dialog shipped without a title gets one written from context, ALL-CAPS button text takes the
+button's sentence case, a form label keeps its ":". List each difference in the handover instead of
+hiding a component's parts to match the screenshot.
 
-**Mode** comes from what the user asked for:
-
-| Mode | The user says | Output | Rules |
-|---|---|---|---|
-| **Anatomy** | "draw the anatomy", "point out the components", "which components is this" | Callout labels + leader lines on a copy of the reference image | Below, *Anatomy mode* |
-| **Rebuild** | "rebuild / recreate / redraw this screen", "build the screens under X" | A faithful screen made of kit instances | `references/rebuild-mode.md` |
-| **Proposal** | "improve", "make it tasteful", "redesign", "proposal version", "what can we do better" | An improved screen in the product's **Proposal** section, next to the faithful one | `references/proposal-mode.md` |
-
-Unsure between Rebuild and Proposal? Ask — they have opposite rules about matching the reference.
-
-**In both Rebuild and Proposal, content comes from the reference and form comes from the
-component.** Keep every word, value and state the reference shows, but let each kit component keep
-its own parts and styles: a dialog the product shipped without a title gets a title written from
-context; ALL-CAPS button text takes the button's own sentence case; a form label keeps its ":".
-Never hide or restyle a component's structural parts to look more like the screenshot — list the
-difference in the handover instead.
-
-## Step 1 — Pin and preflight
+## Step 1: Pin the file and run preflight
 
 ```
-figma_list_open_files                    → is the product file connected?
-figma_navigate <product url>, lock:true  → pin it
+figma_list_open_files                      → is the product file connected?
+figma_navigate <product url>, lock: true   → pin it
 ```
 
-If the product file isn't in the list, the Desktop Bridge plugin isn't open in it — ask the user to
-open it (Plugins → Development → Figma Desktop Bridge). You can still read reference images through
-the claude.ai Figma connector (`get_screenshot`) while you wait.
+If the file isn't listed, the Desktop Bridge plugin isn't open in it. Ask the user to open it
+(Plugins → Development → Figma Desktop Bridge). Pass `fileKey` on **every** `figma_execute`: several
+files are connected at once, and a write into the kit or UpBase is silent and expensive.
 
-Pass `fileKey` on **every** `figma_execute`. Several files are connected at once and the active one
-moves on its own; a write into the kit or UpBase is silent and expensive.
+Run `scripts/preflight-product.js` first, with `kitProbeKey` from the data file's **Kit probe key**
+row. It proves the file, that the kit library resolves, and that a timed-out earlier call didn't
+already build this screen.
 
-Then run `scripts/preflight-product.js` as the first `figma_execute`, with `kitProbeKey` from the
-product data file's **Kit probe key** row. It proves the file, that the
-kit library actually resolves, and that nothing with the target screen name already exists (a
-timed-out call usually finished anyway — see `references/build-mechanics.md`).
+## Step 2: Read the reference (read-only)
 
-## Step 2 — Read the reference
+Screenshot the reference at a scale where text is legible (`figma_capture_screenshot`, scale ≈1.2–2
+on a ~1340px image). Write down the **exact** content: every label, placeholder, count and state,
+which toggle is on, which radio is checked, which fields are in error and what the error says.
+Screens in one module are usually variants of each other, so diff against the screens already built
+(the data file's *Screen register*) before planning from scratch.
 
-Screenshot the reference node at a scale where text is legible (`figma_capture_screenshot`, scale
-≈1.2–2 on a ~1340px image). Work out the **exact** content: every label, placeholder, count, state,
-which toggle is on, which radio is checked, which fields are in error and what the error text says.
-Screens in one module are usually variants of each other — diff them against the ones already built
-before planning from scratch.
+## Step 3: Map the anatomy to kit components
 
-## Step 3 — Map the anatomy to kit components
+Region by region: the kit component, its variant and property settings, and the content. The kit
+map has the mapping, keys, property keys and agreed configurations. **Established usage beats the
+reference**: configure a component the way the other screens do, and list the difference
+(`references/rebuild-mode.md`).
 
-Region by region, name the kit component, the variant/property settings, and the content.
-The kit map (`references/kit-maps/<kit>.md`) has the mapping, keys, property keys and known limits for every
-component used so far. Enumerate the kit before concluding something is missing — most "missing"
-things are a slot fill, a variant, or a component under another name.
+Enumerate the kit before concluding something is missing. Most "missing" things are a slot fill, a
+variant, or a component under another name (`_shared/references/upbase-library.md` › *What UpBase
+calls things*). What the kit genuinely can't express is a **gap**. Check the kit's gap log first
+(path in the data file), because it may already have an agreed workaround.
 
-Anything the kit genuinely can't express is a **gap**. Check the kit's gap log first — it may
-already be logged with an agreed workaround. Its path is the **Gap log** row of the product data
-file (UpS: `docs/kit-gaps/ups.md` in the design repo; a new kit starts from the plugin's
-`${CLAUDE_SKILL_DIR}/../ui-kit-builder/kits/_gap-log-template.md`).
+## Step 4: Propose, then stop
 
-## Step 4 — Proposal, then stop
-
-Post a proposal in chat (not a doc or artifact) and wait for approval before building. The user may
-waive this for a batch ("no need to run proposal, build it straight") — the waiver covers that
-batch only. Template:
+Post the proposal **in chat** and wait for approval before building. The user may waive this for a
+batch ("build it straight"). The waiver covers that batch only.
 
 ```
-**Target** — frame name · size · section · position
-**Reuse** — which built screen it's cloned from, and what changes
-**Anatomy** — region → kit component (settings) · content, one line each
-**Layout** — structure and the spacing tokens it binds
-**Gaps** — each place the kit can't match, the workaround, and GAP id (new or existing)
-**Needs a kit change?** — anything that should go to ui-kit-builder (or design-system-builder) instead
-**Questions** — only real decisions, with a recommendation
+**Target**: frame name · size · section · position
+**Reuse**: which built screen it's cloned from, and what changes
+**Anatomy**: region → kit component (settings) · content, one line each
+**Layout**: structure and the spacing tokens it binds
+**Gaps**: each place the kit can't match, the workaround, and the GAP id (new or existing)
+**Needs a kit change?**: anything that should go to ui-kit-builder or design-system-builder instead
+**Questions**: real decisions only, each with a recommendation
 ```
 
-If a new deviation turns up mid-build that the proposal didn't cover, stop and ask rather than
-deciding.
+If a deviation turns up mid-build that the proposal didn't cover, stop and ask.
 
-## Step 5 — Build in stages
+## Step 5: Build in stages
 
-Read `references/build-mechanics.md` before the first write. The short version of why staging
-matters: a node created in the same call as the frame it goes into, then appended into a slot of an
-instance, gets a stale handle that crashes every later traversal. So:
+Read `references/build-mechanics.md` before the first write. Build in this order, one stage per
+call, because a node created in the same call as the slot it goes into gets a stale handle that
+crashes later traversals:
 
-1. Shell (clone a finished screen of the same module when one exists — it carries header, sidebar,
-   alert and FloatButton already configured).
+1. **Shell**: clone a finished screen of the same module when one exists. It carries the header,
+   navigation, banners and floating buttons already configured (the data file's *Shell*).
 2. Empty structural frames inside slots.
 3. Instances into those frames, one region per call.
 4. Content, states, truncation.
 
 Use `scripts/helpers.js` for property setting with error collection, form fields, error states and
-text truncation. Bind every spacing value you set to a harvested token (`scripts/harvest-tokens.js`
-lists what's reachable); the product file cannot import variables.
+truncation. Bind every spacing value to a harvested token (`scripts/harvest-tokens.js`), because a
+product file can't import variables. UpBase-direct instances are allowed only for icons swapped
+through a kit component's own instance-swap property.
 
-## Step 6 — Verify
+## Step 6: Verify
 
-- `scripts/walk-integrity.js` on the new screen: **0 unreadable nodes**, and the top level lists
-  only kit components.
-- `scripts/check-overrides.js` on the new screen: **0 layout overrides**, or each one named in the
-  handover as something the user asked for. An overridden property never syncs from the library
-  again, so a stray override silently blocks the next upstream fix — and cloning copies it to every
-  sibling. Reset defects to the main component's value.
-- Screenshot the result next to the reference and compare region by region — text, states, counts,
-  alignment, and anything overlapping (the FloatButton is the usual offender).
-- Say what you compared; don't report "matches" from the tree alone.
+- `scripts/walk-integrity.js`: **0 unreadable nodes**, and the top level lists only kit components.
+- `scripts/check-overrides.js`: **0 layout overrides**, or each one named in the handover as
+  something the user asked for. An overridden property never syncs from the kit again, so a stray
+  override silently blocks the next upstream fix, and cloning copies it to every sibling.
+- **Measure edges** after restructuring a cloned frame, against the same region on a sibling screen
+  (`build-mechanics.md` › *Measuring what you built*).
+- Screenshot the result next to the reference and compare region by region: text, states, counts,
+  alignment, overlaps (floating buttons are the usual offender). Say what you compared. Don't report
+  "matches" from the tree alone.
 
-## Step 7 — Log gaps and hand over
+## Step 7: Log and hand over
 
-Append every new gap to the kit's gap log using its entry format, and update the status of
-existing ones you hit. Then report, in this order:
+1. **Gap log**: append every new gap in its entry format, and update the status of ones you hit.
+2. **Screen register**: update the data file (screen → node id → notes). A configuration rule the
+   user agreed on goes in the kit map.
+3. **Changelog**: paste `_shared/scripts/changelog/changelog.js` into `figma_execute` with the product
+   `fileKey`, then call
+   `addChangelogEntry({ date, title, author: '<your name> · with Claude', status: null, sections, saveVersion: true })`.
+   Name and link each screen you added or changed. Cross-link any kit or UpBase entry the work sent
+   upstream. Anatomy-only sessions aren't logged.
+4. **Report**, in this order:
+   1. **Where**: screen name, size, section.
+   2. **What's there**: region by region, briefly.
+   3. **Verified**: the Step 6 checks, with numbers.
+   4. **Differs from the reference**: every deviation and why (gap id), including ones inherited
+      from the screen you cloned.
+   5. **Decisions for the user**: real ones only.
 
-1. **Where** — screen name, size, section.
-2. **What's there** — region by region, briefly.
-3. **Verified** — the checks from Step 6, with numbers.
-4. **Differs from the reference** — every deviation and why (gap id). Include the ones inherited
-   from the screen you cloned.
-5. **Decisions for the user** — only real ones.
+If a build needs a kit component that isn't published ("Could not find a published component"),
+check its publish status in the kit and ask the user to publish. Don't work around it. Publishing is
+always a person's action.
 
-Update the screen register in the product data file (screen → node id → status).
+## Reference map
 
-Then log the session on the product file's `Changelog` page: paste
-`${CLAUDE_SKILL_DIR}/../_shared/scripts/changelog/changelog.js` into `figma_execute` with the product `fileKey` and call
-`addChangelogEntry({ …, status: null, saveVersion: true })`. Name each screen or Global rules
-section you added or changed and link its node. If the work sent a fix upstream to the kit or
-UpBase, cross-link that file's entry under `related`. Anatomy-only sessions that change no
-nodes aren't logged.
-
-## Anatomy mode
-
-Draw on a **copy** of the reference image in its own section — never on the original.
-
-- Section named `Anatomy / <Module> <nn>`, placed where it doesn't overlap existing sections; copy
-  the style of any existing example section on the page (UpS has one: `Example` on
-  `↳ Specifications` — look it up by name; ids change when the file is reorganised). A product
-  with none yet: copy UpS's style and say so.
-- Labels: the kit component's exact name (`Menu / Sidebar / Rail`, `GridTable / Stacked Cell`),
-  24px bold, one colour; 1px leader lines ending in an arrow at the target
-  (`setVectorNetworkAsync` — the sync setter throws).
-- Label slot compositions as `Table Cell (Content slot): Text + Tooltip + Switch` — composing inside
-  a slot is not a gap.
-- Keep lines straight and parallel to an edge; stagger labels so no line crosses another label.
-
-Then list what you labelled, what you deliberately didn't (and why), and any mapping that's a
-judgement call.
-
-## Boundaries
-
-- **Components** belong to `ui-kit-builder` and `design-system-builder`. This skill never creates a component, detaches an
-  instance, or rebuilds a component's internals to get a look.
-- **UpBase-direct instances** are allowed only for icons swapped through a kit component's own
-  instance-swap property (the kit publishes no icons). Say so in the handover.
-- **Publishing** is always the user's action. If a build needs a kit component that isn't published
-  (import says "Could not find a published component"), check its publish status in the kit and ask
-  the user to publish; don't work around it.
+| File | Open it at |
+|---|---|
+| `references/products/<product>.md` | Step 0, always |
+| `references/kit-maps/<kit>.md` | Steps 0 and 3 |
+| `references/products/_template.md` · `kit-maps/_template.md` | registering a product |
+| `references/rebuild-mode.md` · `proposal-mode.md` · `anatomy-mode.md` | Step 0, for the mode |
+| `_shared/references/upbase-library.md` | Step 3: antd vocabulary |
+| `references/build-mechanics.md` | before the first write (Step 5) |
+| `_shared/references/figma-api-gotchas.md` | when a plugin call behaves oddly |
+| `_shared/references/upbase-known-issues.md` | when something in the kit looks wrong and might be UpBase's |

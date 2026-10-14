@@ -88,6 +88,10 @@ for (const p of figma.root.children)
 return hits;
 ```
 
+Also read the kit's **gap log** (path in the data file) for the component you're about to build.
+Product screens may already have hit this need, logged a workaround, or proposed a shape. Check the
+product file's recent Changelog entries too if the request comes from a screen.
+
 Don't use `figma_search_components` for this. It matches descriptions too, and it returns an empty
 success when the access token has expired, which reads as "doesn't exist".
 

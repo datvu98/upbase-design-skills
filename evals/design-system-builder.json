@@ -1,0 +1,10 @@
+{
+  "skill_name": "design-system-builder",
+  "note": "Dry runs, read-only, stop at the proposal. Need Figma Desktop with the Bridge open in UpBase Design System and UpS UI Kit.",
+  "evals": [
+    {"id": 1, "name": "search-before-build", "prompt": "We need a stepper (the - 3 + numeric control) in the UpBase design system. Can you add one? https://www.figma.com/design/BoGaG48v9BfY7LkMtFs4zh/UpBase-Design-System",
+     "assertions": ["Ran preflight in design-system mode against the UpBase key", "Translated 'stepper' to antd vocabulary and found InputNumber (and/or Steps) before proposing", "Did not propose a duplicate component; proposed reuse or extending the existing set", "Stopped before building; nothing created in Figma"]},
+    {"id": 2, "name": "kit-file-routed-away", "prompt": "The FilterBar in https://www.figma.com/design/9c052aEvpV7gYLhwdatf6g/UpS-UI-Kit has too much spacing between fields, tighten it up.",
+     "assertions": ["Recognised the target is a product kit, not the UpBase file", "Routed the request to ui-kit-builder", "Created or modified nothing in Figma"]}
+  ]
+}

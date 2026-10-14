@@ -17,17 +17,25 @@
 
 ## Page list
 
-45 pages. Names carrying `❖` are component pages; the rest are structural.
+73 pages, read from the file on 2026-10-14. Names carrying `❖` are component pages; the rest are
+structural. **Most pages now carry UpBase's own name** (`❖ Segmented`, `❖ Radio`, `❖ Spin`,
+`❖ Progress`…), following the naming decision that wrappers keep UpBase's exact name. Older notes
+in this file, including the triage below, still use the earlier product names (`SegmentedButton`,
+`RadioButton`, `Loading`, `ProgressIndicator`…). Read them as the same pages.
 
 ```
-Playground · ---- · _Table of Content · _Changelog · ----- · COMPONENTS
-❖ Table · TableToolbar · Charts · FilterBar · TabGroup · UserMenu · NavigationMenu · Breadcrumb
-❖ Button · Calendar · Cards · PageHeader · Avatar · Loading · CalendarDateInterval · Checkbox
-❖ RadioButton · Dialogs/Popups · ExpandableText · FileUploader · Form · GridTable · CardTable
-❖ IllustratedMessage · Input · Tag · Link · List · ListItem · SubMenuDropdown · Combobox
-❖ PDF Viewer · ProgressIndicator · RatingIndicator · RichTextEditor · ScrollBar · SegmentedButton
-❖ Drawer · Switch
+_Playground · ---- · _Thumbnail · _Docs · _Table of Content · _Changelog · ----- · COMPONENTS
+❖ FilterBar · TableToolbar · Chart · Form · Button · Input · Select / Combobox · DatePicker
+❖ TimePicker · Menu · GridTable · CardTable · Cards · UserMenu · Modal · TabGroup · Breadcrumb
+❖ Calendar · PageHeader · Drawer · Avatar · Checkbox · Radio · ExpandableText · Upload
+❖ IllustratedMessage · Tag · List · ListItem · Dropdown · Collapse · Rate · RichTextEditor
+❖ ScrollBar · Switch · Pagination · ColorPicker · Timeline · Tree · Segmented · Image · Carousel
+❖ Message · Popconfirm · Progress · Skeleton · Spin · Tooltip · Badge · InputNumber · Steps
+❖ MenuDropdown · Divider · FloatButton · Timestamp · Logo · VideoEmbed · Chat · Descriptions
+❖ Typography · Link · Anchor · Cascader · Popover · Alert · Notification
 ```
+
+Re-read it (`figma.root.children.map(p => p.name)`) before relying on a page name; the list moves.
 
 ## Gaps found by product screens
 
@@ -37,6 +45,9 @@ kit change — the gap, the screen that hit it, the workaround in use and a prop
 and update an entry's status when a change lands (`in kit` → `published`).
 
 ## Page triage
+
+> Written 2026-09 with the earlier page names; see *Page list*. The wrap / compose split still
+> holds, but re-run the Step 2 search before trusting a row.
 
 Which pages wrap an existing UpBase atom and which are genuinely product-specific. Wrapping is the
 default; only the third group is built from parts.
