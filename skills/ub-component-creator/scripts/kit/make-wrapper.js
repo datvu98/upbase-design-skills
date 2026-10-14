@@ -1,13 +1,13 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// make-wrapper — generate a UpS wrapper around a UpBase component.
+// make-wrapper — generate a kit wrapper around a UpBase component.
 //
-// Run via figma_execute with fileKey: '9c052aEvpV7gYLhwdatf6g' (UpS UI Kit).
+// Run via figma_execute with the KIT's fileKey (from references/kit/<kit>.md).
 // Edit CONFIG, run, read the returned report. It creates nothing until every
 // precondition passes, and it reads everything back before returning.
 //
 // The pattern it builds — see references/kit/wrapper-pattern.md:
 //
-//   COMPONENT  "<upsName>"                   local, published by UpS
+//   COMPONENT  "<upsName>"                   local, published by the kit
 //   └── INSTANCE "<nestedLayerName>"         remote main from UpBase
 //       isExposedInstance = true
 // ─────────────────────────────────────────────────────────────────────────────
@@ -18,7 +18,8 @@ const CONFIG = {
   // descriptions and returns silent empties when the token lapses.
   sourceKey: 'a0b8f7e08632a9e38b1ca402519adaff112a5ce6',   // Button / Basic
 
-  // What UpS calls it. Product context decides — it may or may not match UpBase.
+  // What the kit calls it (the field is named upsName for history — any kit).
+  // Product context decides — it may or may not match UpBase.
   upsName: 'Button',
 
   // The consumer's exposed property group is labelled with THIS, not upsName.
@@ -52,8 +53,9 @@ await figma.loadAllPagesAsync();
 
 // ── Preconditions ────────────────────────────────────────────────────────────
 
-if (figma.root.name !== 'UpS UI Kit') {
-  report.warnings.push(`Active file is "${figma.root.name}", expected "UpS UI Kit". Pass fileKey explicitly.`);
+// Any kit is fine; the source library is not — a wrapper there duplicates what it wraps.
+if (figma.fileKey === 'BoGaG48v9BfY7LkMtFs4zh') {
+  return { ...report, fatal: 'Active file is UpBase Design System (the source). Wrappers belong in a kit — re-pin and pass fileKey explicitly.' };
 }
 
 const page = figma.root.children.find(p => p.name === CONFIG.page);

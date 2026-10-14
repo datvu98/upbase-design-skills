@@ -29,6 +29,10 @@ report says fine, and the canvas is wrong. That is why Phase 5 insists on readin
 - [A styled text range survives instancing but not a text override](#a-styled-text-range-survives-instancing-but-not-a-text-override)
 - [`layoutWrap: WRAP` does not give you inline text flow](#layoutwrap-wrap-does-not-give-you-inline-text-flow)
 - [`descriptionMarkdown` normalises whitespace](#descriptionmarkdown-normalises-whitespace)
+- [Hug-to-a-cap text can't live inside an instance](#hug-to-a-cap-text-cant-live-inside-an-instance)
+- [`resize()` on an auto-layout frame flips it to FIXED](#resize-on-an-auto-layout-frame-flips-it-to-fixed)
+- [Fixed-ratio art with a token-bound height](#fixed-ratio-art-with-a-token-bound-height)
+- [Equal-height cards per row need GRID with HUG rows](#equal-height-cards-per-row-need-grid-with-hug-rows)
 - [Auditing without false positives](#auditing-without-false-positives)
 
 ## A timeout is not a rollback
@@ -262,7 +266,7 @@ instance.
 
 **`maxWidth` cannot be bound to a variable on a TEXT node** (`setBoundVariable('maxWidth', …)` →
 "invalid field for text node"). Frames accept it, but a frame carrying the cap around a FILL text
-freezes its width (see the hug/maxWidth memory), so a text cap is a raw value, listed under the
+freezes its width (see [Hug-to-a-cap text can't live inside an instance](#hug-to-a-cap-text-cant-live-inside-an-instance)), so a text cap is a raw value, listed under the
 description's `Raw values`.
 
 ## Moving variants does not resize the COMPONENT_SET
@@ -568,6 +572,77 @@ component is remote. Two ways of putting content into its `Actions` SLOT look fi
 In the kit, where the component is local, `createInstance()` + `appendChild` into the slot worked,
 so test in the consuming file, not in the library.
 
+## Hug-to-a-cap text can't live inside an instance
+
+**`maxWidth` written to a node inside an instance is silently ignored** (measured 2026-09-24).
+`inst.maxWidth = 240` on the instance itself takes; the same write on its nested instance or on the
+TEXT inside reads back `null`. So text that must **hug up to a cap, then ellipsise** can't be
+expressed through a wrapper component at all:
+
+- without truncation, the wrapper caps but the text keeps its natural width and escapes;
+- with `textTruncation = 'ENDING'` + `maxLines = 1`, the text falls back to the width of the *source
+  component's placeholder* (88px for "This is a text") and ellipsises there whatever the container.
+  That fallback width is the tell.
+
+The plausible workaround — a plain frame carrying `maxWidth` around the instance at FILL — is a
+**frozen width**: with every child on FILL the frame has nothing to hug and keeps whatever width it
+had at construction. It looks right when built.
+
+**Rule:** FILL-bounded text (a table cell, a fixed column) migrates to a wrapper cleanly;
+hug-with-a-cap text stays a raw TEXT node until the source component exposes its own cap. Decide per
+node. **Test widths by mutating text on an already-built node** — separately constructed short/long
+cases bake their width in at construction and fake a pass. An overflow probe scores the shrunken
+case as a pass too.
+
+**Trailing glyph that stays adjacent and still truncates** (a colon, a unit): root auto-layout HUG +
+`maxWidth` + the text child at `layoutSizingHorizontal = 'FILL'`. A FIXED root instead floats the
+glyph to the right edge. A trailing glyph after a *wrapping* run is impossible (no inline flow); a
+*leading* marker (required `*`) survives wrapping with `counterAxisAlignItems = 'MIN'`.
+
+## `resize()` on an auto-layout frame flips it to FIXED
+
+`frame.resize(w, h)` silently sets `primaryAxisSizingMode = 'FIXED'`, and a frame resized after
+`layoutMode` was set then clips its children to that height. Set `layoutSizingVertical = 'HUG'`
+**after** populating, innermost frame first, and `clipsContent = false` — `figma.createFrame()` clips
+by default, so the collapse is invisible until you screenshot.
+
+## Fixed-ratio art with a token-bound height
+
+To size a non-square asset (logo lockup, illustration) from a density token without distortion, so
+it tracks Compact automatically:
+
+```js
+c.layoutMode = 'HORIZONTAL';
+c.primaryAxisSizingMode = 'AUTO';    // hug width
+c.counterAxisSizingMode = 'FIXED';   // fixed height
+c.resize(c.width, H);
+c.setBoundVariable('height', controlHeightVar);
+r.resize(nativeW, nativeH);          // child: native ratio first
+r.lockAspectRatio();
+r.layoutSizingVertical = 'FILL';     // width now derives from height
+```
+
+Order: append → size child → set sizing modes → resize parent → bind (`resize()` resets the sizing
+mode, and `layoutSizing*` throws on a node not yet in an auto-layout parent). Binding height plus a
+raw width distorts at Compact; `scaleMode: 'FIT'` letterboxes. Aspect-lock does **not** survive an
+instance swap.
+
+## Equal-height cards per row need GRID with HUG rows
+
+HORIZONTAL + WRAP can't stretch siblings to the row's tallest card. Grid auto-layout can, including
+inside an instance's SLOT:
+
+```js
+g.layoutMode = 'GRID'; g.gridColumnCount = 3; g.gridRowCount = Math.ceil(n / 3);
+g.setBoundVariable('gridColumnGap', v); g.setBoundVariable('gridRowGap', v);
+g.gridRowSizes = g.gridRowSizes.map(() => ({ type: 'HUG' }));   // NOT the default
+child.setGridChildPosition(row, col);
+child.layoutSizingHorizontal = child.layoutSizingVertical = 'FILL';
+```
+
+New rows default to `{ type: 'FLEX' }`, which makes **every** row as tall as the tallest card in the
+grid. HUG sizes per row.
+
 ## Auditing without false positives
 
 **Exclude instances and their subtrees.** An instance's padding, radius and fills reflect its main
@@ -581,11 +656,25 @@ while (p) { if (p.type === 'INSTANCE') { inside = true; break; } p = p.parent; }
 if (inside) continue;
 ```
 
+**Overflow probes need two more exclusions**, or nearly every probe "fails":
+
+1. **Hidden nodes keep their geometry.** Prune the whole subtree on `n.visible === false` — return,
+   don't just skip the node, or its children are still measured.
+2. **Absolutely positioned children sit outside on purpose** (`Form Item / Horizontal`'s label at
+   x = −120). Subtract the known gutter rather than counting it.
+
+And never stress-test by writing a long string into *every* TEXT node — placeholders and unit
+suffixes hug and blow out, masking the real result. Stress only the node under test. (One sweep
+went from 204 "failures" to 37 real findings with these applied.)
+
 ## Screenshots
 
 `figma_capture_screenshot` uses the plugin's `exportAsync`, reflects **current** state, and needs no
 REST token — prefer it. `figma_get_component_image` and `figma_take_screenshot` fall back to the REST
 API and will 403 on an expired `FIGMA_ACCESS_TOKEN`.
+
+**`figma_capture_screenshot` caches per node id** — after changing a node, a re-capture can return
+the old image. Recreate the node (or capture its parent) for a fresh one.
 
 Scale is capped so the longest side stays ≤1568px; the minimum accepted `scale` is 0.5. For a wide
 component set, screenshot individual variants instead of fighting the cap.

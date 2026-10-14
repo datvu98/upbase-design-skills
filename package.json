@@ -1,0 +1,20 @@
+{
+  "name": "upbase-design-skills",
+  "version": "0.1.0",
+  "description": "Claude Code skills for the UpBase design system: build kit components (ub-component-creator) and product screens (product-screen-builder) in Figma.",
+  "private": true,
+  "bin": {
+    "upbase-design-skills": "bin/install.js"
+  },
+  "files": [
+    "bin/",
+    "skills/",
+    "README.md",
+    "SETUP.md",
+    "CHANGELOG.md"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "UNLICENSED"
+}

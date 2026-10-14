@@ -1,9 +1,12 @@
 ---
 name: ub-component-creator
-description: Build and change Figma components across the UpBase design system — both the source library (UpBase Design System, `BoGaG48v9BfY7LkMtFs4zh`) and the product UI Kits that consume it (UpS UI Kit, `9c052aEvpV7gYLhwdatf6g`, and future kits). Use this whenever the user wants to create, add, design, build, wrap or extend a component, pattern or variant set in any of those files, including when they only name the thing ("build a Chat component", "add a stepper", "build the UpS filter bar", "wrap Button into the kit", "we need a file uploader") without mentioning tokens, styles or process. Also use it for **pulling a component out of the source library into a kit** and the **local-component-owning-a-remote-instance wrapper pattern**; for deciding whether a platform difference is a token, a variant axis or a separate component; for **responsive and breakpoint behaviour** ("what does this do on a narrow screen", "does this stack at 768"); for **which platforms a component reaches** (web / mobile — iOS and Android are one target); for auditing whether a component is properly bound to tokens and styles; and for why a component "looks off" at compact density. The rules **invert** between authoring the source and composing a kit, so this skill resolves the mode from the target file key before anything else. Prefer it over improvising Figma plugin code, because this system has specific token tiers, 20 text styles, 10 effect styles and naming conventions that are easy to miss and expensive to retrofit.
+description: Build and change Figma components across the UpBase design system — both the source library (UpBase Design System, `BoGaG48v9BfY7LkMtFs4zh`) and the product UI Kits that consume it (UpS UI Kit, `9c052aEvpV7gYLhwdatf6g`, and any other kit registered under `references/kit/`). Use this whenever the user wants to create, add, design, build, wrap or extend a component, pattern or variant set in any of those files, including when they only name the thing ("build a Chat component", "add a stepper", "build the UpS filter bar", "wrap Button into the kit", "we need a file uploader") without mentioning tokens, styles or process. Also use it for **pulling a component out of the source library into a kit** and the **local-component-owning-a-remote-instance wrapper pattern**; for deciding whether a platform difference is a token, a variant axis or a separate component; for **responsive and breakpoint behaviour** ("what does this do on a narrow screen", "does this stack at 768"); for **which platforms a component reaches** (web / mobile — iOS and Android are one target); for auditing whether a component is properly bound to tokens and styles; and for why a component "looks off" at compact density. The rules **invert** between authoring the source and composing a kit, so this skill resolves the mode from the target file key before anything else. Prefer it over improvising Figma plugin code, because this system has specific token tiers, 20 text styles, 10 effect styles and naming conventions that are easy to miss and expensive to retrofit.
 ---
 
 # UpBase components
+
+Paths in this skill are relative to its own directory, `${CLAUDE_SKILL_DIR}`. It is installed from
+the `upbase-design-skills` repo next to `product-screen-builder`, which reads some of its files.
 
 One system, two roles. Which role you are in changes the rules — not by degree, but by inversion:
 the source library forbids duplicating an existing component, and a kit's whole job is to wrap one.
@@ -31,7 +34,25 @@ figma_navigate <url>, lock:true  → pin the target
 | Target file key | Mode | Then read |
 |---|---|---|
 | `BoGaG48v9BfY7LkMtFs4zh` | **Source** — authoring the library | `references/source/mode.md` |
-| anything else (e.g. `9c052aEvpV7gYLhwdatf6g`) | **Kit** — composing a consumer | `references/kit/mode.md` |
+| a registered kit (below) | **Kit** — composing a consumer | the kit's data file, then `references/kit/mode.md` |
+| anything else | **Stop** | the file is not registered — see below |
+
+**A kit is registered by its data file**: a file in `references/kit/` (other than `_template.md`)
+whose **File key** row holds the target key. Find it with a search, not from memory:
+
+```
+grep -l "<file key>" ${CLAUDE_SKILL_DIR}/references/kit/*.md
+```
+
+Known today: UpS UI Kit `9c052aEvpV7gYLhwdatf6g` → `references/kit/ups.md`. There is no table to
+edit — a team adds its kit by adding one file (README › *Registering your kit*), and that file
+survives updates to the skills.
+
+**An unregistered key is a stop, not a guess.** Kit mode reads its file key, page names, naming
+rule and platform reach from the data file; borrowing `ups.md` for another kit writes UpS's ids and
+conventions into the wrong file. Tell the user the key isn't registered, and offer to create the
+data file from `references/kit/_template.md` with them — the *Decisions to make once* table needs
+their answers, not yours.
 
 If the user hasn't said which file, ask — don't infer it from the component's name. "Build a filter
 bar" is a kit task; "fix Badge's min-width" is a source task; "add a stepper" could be either.
@@ -111,10 +132,24 @@ source edited → publish source → kit accepts → publish kit → product fil
 A kit wrapper does not see a source fix until the kit accepts that update, so it can be silently one
 version behind while looking correct.
 
+**A Source change that breaks a consumer must say so.** UpBase is consumed by every registered
+kit, and owners of other kits are not in your session. Before reporting a Source change done, check
+it against this list; any hit makes it **breaking**:
+
+- a component, variant, property or slot **renamed or removed**, or a variant axis changed;
+- a component's **key** changed (deleted and re-created instead of edited);
+- a token or style **renamed, removed or re-pointed** to a different meaning;
+- a default changed in a way that moves existing instances (size, visibility, content).
+
+A breaking change gets its changelog item prefixed **`⚠ Breaking —`**, naming what consumers must do
+when they accept the publish, and the handover lists every registered kit (every data file in
+`references/kit/`) as affected. The UpBase `_Changelog` page is how other teams learn about changes, so an unmarked
+breaking change reaches them as a silent regression.
+
 **Log it before you report done.** Every change to UpBase or a kit gets an entry on that file's
-`_Changelog` page: paste `scripts/changelog/changelog.js` (repo root) into `figma_execute` with the
+`_Changelog` page: paste `scripts/changelog/changelog.js` into `figma_execute` with the
 file's `fileKey` and call `addChangelogEntry({ …, status: 'pending', saveVersion: true })`. That
-saves a matching named version too. One entry per session per file. If the change continues into
+saves a matching named version too. Pass your own name in `author`. One entry per session per file. If the change continues into
 another file, log it there as well and cross-link the two under `related`. When the user says
 they've published, flip it with `setChangelogStatus(…, 'published')`. The rules are in the
 script's header.
@@ -122,7 +157,8 @@ script's header.
 ## The map
 
 Folder = scope. Root applies everywhere; `source/` and `kit/` apply to one mode and invert in the
-other. **A new kit is one file** — `references/kit/<name>.md` — plus a row in the Step 0 table.
+other. **A new kit is one file** — `references/kit/<name>.md`, copied from `_template.md`. Nothing else
+changes.
 
 ```
 SKILL.md                             the gate and the shared spine (this file)
@@ -131,6 +167,7 @@ references/
   figma-api-gotchas.md               silent-failure API traps — read before writing plugin code
   verification.md                    mode sweep, stress cases, audit procedure
   tokens.md                          every token: antd's meaning + UpBase's actual value + deviations
+  upbase-known-issues.md             measured defects in UpBase that every consumer inherits
 
   source/                            ── authoring UpBase · everything resolves LOCALLY
     mode.md                          seven phases, reuse gates, build and binding rules
@@ -142,10 +179,14 @@ references/
     wrapper-pattern.md               local component owning a remote instance, exposure semantics
     subscription.md                  file keys, 4 collection keys, all 32 style keys
     page-template.md                 none of the source's chrome — header + three sections
-    ups.md                           UpS UI Kit: key, page list, naming, platform reach
+    patterns.md                      lessons that hold in any kit (sizing, exposure, slots, overrides)
+    _template.md                     blank kit data file — copy it to register a new kit
+    gap-log-template.md              blank gap log — a kit's record of what screens couldn't do
+    ups.md                           UpS UI Kit: key, page list, naming, platform reach (worked example)
 
 scripts/
   preflight.js                       Step 1 — run before the first node, either mode
+  changelog/changelog.js             the _Changelog page entry builder — every file, both skills
   check-reflow.js   audit-coverage.js   audit-platform.js   audit-reuse.js
 
   source/

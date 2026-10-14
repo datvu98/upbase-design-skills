@@ -1,7 +1,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// audit-wrappers — health of every UpS wrapper, and drift against its UpBase source.
+// audit-wrappers — health of every kit wrapper, and drift against its UpBase source.
 //
-// Run via figma_execute with fileKey: '9c052aEvpV7gYLhwdatf6g' (UpS UI Kit).
+// Run via figma_execute with the KIT's fileKey (from references/kit/<kit>.md).
 // Read-only: creates nothing, changes nothing.
 //
 // Run it after building, and again after every UpBase update you accept —

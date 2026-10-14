@@ -118,6 +118,12 @@ index, same properties) in a separate call. Then prove it with `scripts/walk-int
 - Heights read inside the call that changed widths can be stale; re-read in a separate call.
 - `findOne` by a generic name (`Left`, `Right`, `Header`, `Content`) can match inside the
   PageHeader or another instance first. Scope lookups to the region (`card.findOne(...)`).
+- **Measure edges after restructuring a cloned frame.** A clone's padding is tuned to its *original*
+  first and last child; reorder or swap children and the edges drift (UpS: a bulk button moved to
+  the top sat flush against the card edge, and 28px opened above a table where siblings had 12).
+  Integrity, override and screenshot checks all pass. Return each child's box relative to its
+  container next to the same numbers from one or two sibling screens, and fix the differences
+  before the screenshot.
 
 ## Layout
 

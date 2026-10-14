@@ -8,8 +8,9 @@
 | **File key** | `9FAdrUvuA7q0VExwsAxNu6` |
 | **URL** | https://www.figma.com/design/9FAdrUvuA7q0VExwsAxNu6/UpS-Product-2026 |
 | **Consumes** | UpS UI Kit `9c052aEvpV7gYLhwdatf6g` only (governance decision 2026-09-09) — never UpBase directly, except icon swaps |
-| **Kit map** | `references/kit-map-ups.md` |
-| **Gap log** | `docs/kit-gaps/ups.md` (repo root) |
+| **Kit map** | `references/kit-maps/ups.md` |
+| **Kit probe key** | `ad019f1790ab546845e50debf54d2bc5a710a6bf` (UpS `Button / Basic`) — pass to `preflightProduct` |
+| **Gap log** | `docs/kit-gaps/ups.md` in the UpBase Design System repo |
 | **Local variables / styles** | none — and they can't be imported (the kit publishes no variables). Harvest bound ones, below |
 
 ## Pages and sections
@@ -121,7 +122,7 @@ Placed at y 16158 (806 below `Chuyển kho`).
 | 05 | `40:65264` (image 35) | `123:81203` · Lỗi số lượng | 04 + `Text` Danger SM "Vui lòng nhập số lượng hàng hóa" under each Số lượng (GAP-048). Table ABSOLUTE at x −565 in the clipping `Body` (FIXED 639) to match the reference's scroll position. Rows 6–7 of the reference left out (product names never visible) |
 | 06 | `40:65265` (image 36) | `121:69707` Đặt hàng 06 — Đẩy sang Vietfull | 01 at 1024, Đẩy sang Vietfull tab active, TableToolbar + Pagination removed. Date filled 29/08/2026 00:00 → 27/09/2026 23:59. Tabs Đẩy đơn thành công (0) · Đẩy đơn lỗi (0). Header Control (checkbox, resident UpBase `Table / Table Item / Header Control`, as Xuất nhập 03) + Thông tin mã 240 / Số lượng / Thông tin kho / Thời gian / Thao tác 88; `IllustratedMessage` S "Chưa có phiếu nhập kho" |
 
-Column widths (rule in `kit-map-ups.md`, applied 2026-10-02; GridTable 1168 wide): first column
+Column widths (rule in `kit-maps/ups.md`, applied 2026-10-02; GridTable 1168 wide): first column
 FIXED 240 (longest GRN code 159 + 32 → floor) · middle columns FILL · Thời gian min 151 · Tài khoản
 min 142 · Thao tác FIXED 88. Result: 240/137×4/151/142/88; with the checkbox column
 48/240/125×4/151/142/88. Kho hàng 01: 240/127×4/Cấu hình min 188/127/Thao tác 104 (text button 72 + 32). Xuất nhập 05 products:

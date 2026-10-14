@@ -44,8 +44,8 @@ first case: Xuất nhập 09's reference has column dividers, every other list u
 GridTable, so 09 uses the plain GridTable (user, 2026-10-02).
 
 Before configuring a component, look at how the screens already in the file configure it (the
-screen register in the product data file, and `kit-map-ups.md`, which records the agreed
-configuration). If the reference disagrees, use the established one and list the difference in the
+screen register in the product data file, and the kit map `references/kit-maps/<kit>.md`, which
+records the agreed configuration). If the reference disagrees, use the established one and list the difference in the
 handover. If no screen has used the component yet, follow the reference and the kit map. User
 preferences recorded in the kit map (e.g. single row actions are icon-only `Default` buttons)
 apply the same way.
@@ -61,8 +61,9 @@ Within that rule, match, in this order of importance:
    row; the same columns in the same order.
 3. **State** — errors, disabled, active tab/menu item, expanded group, modal open.
 4. **Proportions** — column widths, relative spacing. Table column alignment is **not** taken from
-   the reference: left for everything, right for decimal numbers, header matching its cells
-   (`kit-map-ups.md` › Column alignment).
+   the reference; it follows the kit map's rule, with the header matching its cells. UpS: left for
+   everything, right for decimal numbers (`kit-maps/ups.md` › Column alignment). A kit map with no
+   rule yet → use the UpS one and say so in the handover.
 
 ## Allowed adjustments
 

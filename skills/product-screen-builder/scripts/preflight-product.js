@@ -5,6 +5,7 @@
 //
 //   const pf = await preflightProduct({
 //     fileKey: '9FAdrUvuA7q0VExwsAxNu6',           // the product file you intend to write to
+//     kitProbeKey: 'ad019f17…',                     // any published kit component — from the product data file
 //     screenName: 'Kho hàng 03',                    // prefix of the frame you're about to build
 //   });
 //   if (pf.blocked) return pf;                       // STOP — create nothing
@@ -17,12 +18,15 @@
 //   3. leftovers      — a timed-out call usually finished; building again duplicates
 // ─────────────────────────────────────────────────────────────────────────────
 
-async function preflightProduct({ fileKey, screenName = null, kitProbeKey = 'ad019f1790ab546845e50debf54d2bc5a710a6bf' /* UpS Button / Basic */ } = {}) {
+async function preflightProduct({ fileKey, screenName = null, kitProbeKey = null } = {}) {
   const out = { blocked: false, checks: [], warnings: [] };
   const fail = (name, detail) => { out.blocked = true; out.checks.push({ name, ok: false, detail }); };
   const pass = (name, detail) => out.checks.push({ name, ok: true, detail });
 
   if (!fileKey) { fail('fileKey', 'pass the product fileKey you intend to write to'); return out; }
+  // Each product file consumes its own kit, so the probe comes from its data file ("Kit probe key").
+  // UpS Product 2026 → UpS `Button / Basic` 'ad019f1790ab546845e50debf54d2bc5a710a6bf'.
+  if (!kitProbeKey) { fail('kitProbeKey', 'pass kitProbeKey — the "Kit probe key" row of references/products/<product>.md'); return out; }
 
   // 1. File identity
   const actual = typeof figma.fileKey === 'string' ? figma.fileKey : null;

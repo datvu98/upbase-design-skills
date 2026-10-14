@@ -1,6 +1,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// UpS remote resolver — paste at the top of a figma_execute call against
-// UpS UI Kit (9c052aEvpV7gYLhwdatf6g).
+// Kit remote resolver — paste at the top of a figma_execute call against any
+// kit that consumes UpBase (UpS UI Kit, or the kit named in references/kit/<kit>.md).
+// `kitResolve` and `upsResolve` are the same function; the second is the original name.
 //
 // Replaces initUB() from scripts/source/helpers.js. That one
 // resolves variables and styles from LOCAL collections, which are empty in this
@@ -227,3 +228,5 @@ async function upsResolve(opts) {
   };
   return UPS;
 }
+
+const kitResolve = upsResolve;

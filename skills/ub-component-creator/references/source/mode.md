@@ -7,7 +7,7 @@
 
 ## Read these first
 
-Source mode reads **five** files, this one included. Load them now rather than mid-build; the ones
+Source mode reads **six** files, this one included. Load them now rather than mid-build; the ones
 that prevent silent failure are no use once the write has landed.
 
 | # | Read | For |
@@ -17,9 +17,12 @@ that prevent silent failure are no use once the write has landed.
 | 3 | `references/tokens.md` | every token: antd's meaning, UpBase's actual value, and the deviations (Phase 2 and Phase 3) |
 | 4 | `references/source/foundations.md` | what else exists: collections & modes, styles, component inventory, known gaps |
 | 5 | `references/source/page-template.md` | the page layout — the page is part of the deliverable |
+| 6 | `references/upbase-known-issues.md` | measured defects already on record — the to-do list, and what not to re-discover |
 
 Then `references/verification.md` at Phase 5. Source mode never reads anything under
-`references/kit/` or `scripts/kit/`; those invert these rules.
+`references/kit/` or `scripts/kit/`; those invert these rules — **except the Step 0 kit table in
+SKILL.md**, which is the list of consumers a breaking change reaches (SKILL.md › *A Source change
+that breaks a consumer must say so*).
 
 Preamble is `scripts/source/helpers.js`. Using the kit's `scripts/kit/resolve-remote.js` here
 resolves nothing and says so quietly.

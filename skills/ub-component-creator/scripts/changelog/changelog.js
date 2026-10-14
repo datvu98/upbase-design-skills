@@ -1,15 +1,16 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// Changelog builder for the three UpBase files. Paste into figma_execute (pass
-// fileKey), then call addChangelogEntry() at the bottom.
+// Changelog builder for UpBase, its kits and their product files. Paste into
+// figma_execute (pass fileKey), then call addChangelogEntry() at the bottom.
 //
 //   UpBase Design System  BoGaG48v9BfY7LkMtFs4zh  page "_Changelog"
 //   UpS UI Kit            9c052aEvpV7gYLhwdatf6g  page "_Changelog"
 //   UpS Product 2026      9FAdrUvuA7q0VExwsAxNu6  page "Changelog"
+//   any other kit/product  a page named "_Changelog" or "Changelog" — create it empty first.
 //
 //   return await addChangelogEntry({
 //     date: '2026-10-13',                       // ISO; shown as "13 Oct 2026"
 //     title: 'Form Actions bar, sticky footer rule',
-//     author: 'Dat Vu · with Claude',
+//     author: 'Your Name · with Claude',         // required — who made the change
 //     status: 'pending',                        // 'pending' | 'published' | null (product files)
 //     sections: {                               // Added · Changed · Fixed · Deprecated · Removed
 //       Added: [{ name: 'Form Actions', text: 'new component (slot + Pinned)', node: '481:43096' }],
@@ -31,7 +32,9 @@
 //     Playground experiments are not logged.
 //   - status: 'pending' in UpBase and the kit until the user publishes; then flip it with
 //     setChangelogStatus. Product files take null.
-//   - Author: 'Dat Vu · with Claude'.
+//   - Author: your own name, '<Name> · with Claude'. There is no default.
+//   - In UpBase, prefix a breaking item's text with '⚠ Breaking — ' and say what consumers
+//     must do when they accept the publish (ub-component-creator SKILL.md).
 //
 // Timeouts: figma_execute caps at 30s. A run that "times out" can still finish in the
 // background — re-read the Entries frame before retrying, or you get a duplicate entry and
@@ -44,8 +47,8 @@
 // first run in a file is slow. The token list is limited to what the kit can reach —
 // check there before adding one.
 //
-// The status tag is a real Tag instance: UpBase `Tag / Status` locally, the kit's `Tag`
-// wrapper (Type=Status) in the kit and in product files.
+// The status tag is a real Tag instance: UpBase `Tag / Status` locally, the UpS kit's `Tag`
+// wrapper (Type=Status) in UpS files, and UpBase `Tag / Status` imported by key anywhere else.
 // ─────────────────────────────────────────────────────────────────────────────
 
 const CL_VARS = {
@@ -211,8 +214,10 @@ async function clTagSet() {
     const local = await figma.getNodeByIdAsync(t.id);
     if (local && local.type === 'COMPONENT_SET' && local.key === t.key) return local;
   }
-  const set = await clRace(figma.importComponentSetByKeyAsync(CL_TAG.kit.key), 8000);
-  if (!set) throw new Error('Changelog: cannot reach the Tag component in ' + figma.root.name);
+  // UpS product files reach the UpS wrapper; any other kit or product reaches UpBase directly.
+  const set = await clRace(figma.importComponentSetByKeyAsync(CL_TAG.kit.key), 8000)
+    || await clRace(figma.importComponentSetByKeyAsync(CL_TAG.upbase.key), 8000);
+  if (!set) throw new Error('Changelog: cannot reach a Tag component in ' + figma.root.name + ' — is UpBase (or the UpS kit) enabled as a library?');
   return set;
 }
 
@@ -285,7 +290,8 @@ async function addChangelogEntry(e) {
   const date = await clText('Date', clDateLabel(e.date), 'Heading/4', 'colorText', T); row.appendChild(date); clFill(date);
   if (e.status) row.appendChild(await clTag(e.status));
   const title = await clText('Summary', e.title, 'Heading/5', 'colorText', T); top.appendChild(title); clFill(title);
-  const by = await clText('Author', `By ${e.author || 'Dat Vu · with Claude'}`, 'Text SM/Normal', 'colorTextTertiary', T); top.appendChild(by); clFill(by);
+  if (!e.author) throw new Error('Changelog: pass author — your own name, e.g. "Jane Doe · with Claude"');
+  const by = await clText('Author', `By ${e.author}`, 'Text SM/Normal', 'colorTextTertiary', T); top.appendChild(by); clFill(by);
 
   const groups = [...CL_ORDER.filter(k => e.sections && e.sections[k] && e.sections[k].length).map(k => [k, e.sections[k]]),
                   ...(e.related && e.related.length ? [['Related', e.related]] : [])];

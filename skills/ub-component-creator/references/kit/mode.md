@@ -7,17 +7,19 @@
 
 ## Read these first
 
-Kit mode reads **six** files, this one included. Load them now rather than mid-build; the ones that
-prevent silent failure are no use once the write has landed.
+Kit mode reads **eight** files, this one included. Load them now rather than mid-build; the ones
+that prevent silent failure are no use once the write has landed.
 
 | # | Read | For |
 |---|---|---|
-| 1 | `references/kit/<kit>.md` | **the kit's data file — read before this one.** File key, page list, naming, platform reach. For UpS: `references/kit/ups.md` |
+| 1 | `references/kit/<kit>.md` | **the kit's data file — read before this one.** File key, page list, naming, platform reach, the kit's own decisions. UpS: `references/kit/ups.md`. No data file for this key → stop (SKILL.md Step 0) |
 | 2 | this file | the seven steps, and the four rules that invert from Source |
-| 3 | `references/kit/wrapper-pattern.md` | the recipe in full, exposure semantics, the curation fork |
-| 4 | `references/kit/subscription.md` | file keys, 4 collection keys, 32 style keys — remote resolution |
-| 5 | `references/figma-api-gotchas.md` | the traps that fail silently — **before** any plugin code |
-| 6 | `references/kit/page-template.md` | the kit page layout — **not** the source library's |
+| 3 | `references/kit/patterns.md` | lessons that hold in any kit — sizing, exposure chains, slots, overrides |
+| 4 | `references/kit/wrapper-pattern.md` | the recipe in full, exposure semantics, the curation fork |
+| 5 | `references/kit/subscription.md` | file keys, 4 collection keys, 32 style keys — remote resolution |
+| 6 | `references/figma-api-gotchas.md` | the traps that fail silently — **before** any plugin code |
+| 7 | `references/upbase-known-issues.md` | UpBase defects every kit inherits — so you don't report them as yours, or "fix" them in the kit |
+| 8 | `references/kit/page-template.md` | the kit page layout — **not** the source library's |
 
 Then `references/verification.md` at Step 6, and `references/tokens.md` whenever you
 bind a token you haven't bound before. Kit mode reads nothing under `references/source/` or
@@ -36,8 +38,9 @@ the kit owns its name and API, or a product-specific arrangement of several UpBa
 almost never something drawn from scratch. Spend judgement on which of those two it is and what
 it's called; radius, spacing, type and colour were decided upstream.
 
-Examples below use UpS because it is the first kit; substitute the key and page names from the
-kit's own data file.
+Examples below use UpS because it is the first kit; substitute the key, page names and
+conventions from the kit's own data file. Where the data file records a decision (naming, page
+shape), it beats an example here.
 
 ```
 UpBase Design System ──publish──▶ UpS UI Kit ──publish──▶ UpS product files
@@ -49,7 +52,7 @@ BoGaG48v9BfY7LkMtFs4zh           9c052aEvpV7gYLhwdatf6g
 | Call | Use for |
 |---|---|
 | `figma_list_open_files` | Confirm both files are connected before anything else |
-| `figma_navigate` url, `lock:true` | Pin UpS as the active target |
+| `figma_navigate` url, `lock:true` | Pin the kit as the active target |
 | `figma_execute` + `fileKey` | Everything. Always pass `fileKey` explicitly, even when pinned. **Caps at 30s; a timeout is not a rollback** — chunk the work, warm the import cache in its own call, and guard every build against duplicates (`references/figma-api-gotchas.md`) |
 | `figma_capture_screenshot` | Visual check — reads live plugin state, unlike REST export |
 | ~~`figma_search_components`~~ with `libraryFileKey` | **Avoid.** Matches descriptions as well as names, and returns `success: true, results: []` when the REST token lapses. Search UpBase through the plugin instead — Step 2 |
@@ -72,7 +75,7 @@ the correct move:
 | Source mode says | Kit mode |
 |---|---|
 | Never build a second component that duplicates an existing one | Wrapping an existing UpBase component **is** the deliverable |
-| No two components may share a name | UpS names come from **product context**; may match UpBase or not |
+| No two components may share a name | Kit names come from **product context**; may match UpBase or not |
 | Everything is local — look up by name, never import by key | Everything is **remote**. Import by key is the only way |
 | Zeros from the audit mean you drifted into the wrong file — create nothing | **Zeros are correct here.** `getLocalVariableCollectionsAsync()` returns `[]` even after importing |
 
@@ -88,16 +91,17 @@ is silent and expensive.
 
 ```
 figma_list_open_files                     → confirm both connected
-figma_navigate <UpS url>, lock:true       → pin
+figma_navigate <kit url>, lock:true       → pin
 ```
 
-Then pass `fileKey: '9c052aEvpV7gYLhwdatf6g'` on every `figma_execute` anyway. The pin protects the
+Then pass the kit's `fileKey` (from its data file; UpS: `'9c052aEvpV7gYLhwdatf6g'`) on every
+`figma_execute` anyway. The pin protects the
 default; `fileKey` protects the call.
 
 Then **run `scripts/preflight.js` as your first `figma_execute`**, before any node exists:
 
 ```js
-const pf = await preflight({ mode: 'kit', fileKey: '9c052aEvpV7gYLhwdatf6g', building: '<UpS name>' });
+const pf = await preflight({ mode: 'kit', fileKey: '<kit file key>', building: '<kit component name>' });
 if (pf.blocked) return pf;   // do not create anything
 ```
 
@@ -135,24 +139,45 @@ Translate the vocabulary before concluding anything is missing — the full tabl
 So a scoped search field is not a new component: it's `Input / Search` or `Input / Pre Post Tab`
 with the addon set to `Type=Select, Tab=Pre`.
 
-### Step 3 — Decide the shape, then build it
+### Step 3 — Decide the shape, propose, then build it
 
-| What UpS needs | Build | How |
+**Nothing new is built without an approved proposal.** Run Steps 1–2 (read-only), then post a
+proposal in chat and stop until the kit's owner (data file › **Owner**) approves it. Cover:
+
+- the shape (row of the table below) and why nothing in the kit or UpBase already serves;
+- name and page, following the data file's naming decision;
+- anatomy, with the **variant count multiplied out** — before → after, per set and in total.
+  Minimising variants is the goal: booleans, instance swaps, slots and text cost zero variants; only
+  colour and text alignment genuinely need one;
+- states, instance properties, the `Web:` / `Native:` lines (from the data file's platform reach);
+- non-obvious token picks with measured contrast, and every raw value you foresee;
+- anything that should be a UpBase change instead (the Step 3 gate below).
+
+Ask about platform reach and breakpoint behaviour rather than inferring them. Reuse, instance
+overrides and mode changes build nothing and need no proposal.
+
+| What the kit needs | Build | How |
 |---|---|---|
-| One UpBase component, UpS name, full API | **Wrapper** | `scripts/kit/make-wrapper.js` |
+| One UpBase component, kit name, full API | **Wrapper** | `scripts/kit/make-wrapper.js` |
 | One UpBase component with **fewer** axes than UpBase offers | **Curated set** | One wrapper variant per combination — price it first |
 | An arrangement of ≥2 UpBase components the product repeats | **Composition** | Step 4 |
 | Something UpBase genuinely doesn't have | **Stop** | It probably belongs in UpBase — raise it |
 
-That last row is a gate, not a note: a generic control invented in UpS is invisible to every other
-product and gets rebuilt elsewhere. If UpS ships one anyway as a deliberate stopgap, say so in the
-description so it reads as a decision.
+That last row is a gate, not a note: a generic control invented in one kit is invisible to every
+other product and gets rebuilt elsewhere. Raise it with the UpBase owner (README › *Who owns
+what*) with the gap, the screen that needs it and a proposed shape. If the kit ships one anyway as a
+deliberate stopgap, say so in the description so it reads as a decision, and log it in the kit's
+gap log.
+
+The same goes for **an atom that needs to look different** — an indent, a padding, a colour that
+belongs to a UpBase component. That is a UpBase change, never an override on nested remote
+instances in the kit (`references/kit/patterns.md` › *Fix atoms upstream*).
 
 **The wrapper pattern** — a local component owning a remote instance, nested instances exposed:
 
 ```
-COMPONENT  "<UpS name>"                   local · componentPropertyDefinitions stays []
-└── INSTANCE "<UpS-facing layer name>"    remote main from UpBase
+COMPONENT  "<kit name>"                   local · componentPropertyDefinitions stays []
+└── INSTANCE "<kit-facing layer name>"    remote main from UpBase
     isExposedInstance = true              ← without this the consumer gets NO properties
 ```
 
@@ -161,7 +186,7 @@ Four things the recipe exists to get right, each verified on `Button / Basic`:
 | Rule | What goes wrong without it |
 |---|---|
 | `isExposedInstance = true` | Consumer's property panel is **empty** — all 12 controls exist on the child, none surface |
-| Rename the nested layer | The exposed group is labelled with **that layer's** name, so designers read UpBase's vocabulary inside a component UpS deliberately renamed |
+| Rename the nested layer | The exposed group is labelled with **that layer's** name, so designers read UpBase's vocabulary inside a component the kit deliberately renamed |
 | Mirror the source's sizing | A HUG wrapper silently caps a child meant to FILL — fine on `Button`, wrong on `Input`, `Table`, `Drawer` |
 | Carry the description | Figma asset search matches description text; an empty one is unfindable |
 
@@ -174,13 +199,13 @@ UpBase components and arranges them. Never rebuild an atom's internals to get a 
 atom can't do what the product needs, that's the Step 3 gate.
 
 - **Nested UpBase instances keep their own tokens.** A `Button` inside your toolbar stays bound to
-  `Components/Button/*`. Only a deliberate override belongs to UpS.
+  `Components/Button/*`. Only a deliberate override belongs to the kit.
 - **Bind your own layers to imported UpBase variables and styles** — never a raw hex, never a local
-  UpS variable that merely copies a UpBase value.
+  kit variable that merely copies a UpBase value.
 
 ### Step 5 — Resolve tokens and styles remotely
 
-`getLocalVariableCollectionsAsync()` and `getLocalTextStylesAsync()` return **empty in UpS even
+`getLocalVariableCollectionsAsync()` and `getLocalTextStylesAsync()` return **empty in a kit even
 after importing** — imported assets are remote, not local. Every name-based local lookup silently
 finds nothing. That is this file's healthy state, not a symptom.
 
@@ -198,8 +223,8 @@ await R.applyTextStyle(textNode, 'Text Base/Normal');
 |---|---|
 | Aliases stay theme-transparent across files — `255,255,255` Light, `20,20,20` Dark | Light/Dark and Default/Compact keep working; a wrapper that ignores Compact is a real defect |
 | UpBase colour tokens are **themselves aliases** | Reading `valuesByMode` directly returns an alias object, not a colour — follow the chain |
-| `importStyleByKeyAsync` + `setTextStyleIdAsync` / `setEffectStyleIdAsync` work | UpS needs **no** local copies of the 20 text / 10 effect / 2 grid styles. Keys in `references/kit/subscription.md` |
-| UpS cannot *re-publish* UpBase styles | A product file applying `Text Base/Normal` to its own free text still needs UpBase. Components built here are unaffected — the style travels inside the instance |
+| `importStyleByKeyAsync` + `setTextStyleIdAsync` / `setEffectStyleIdAsync` work | A kit needs **no** local copies of the 20 text / 10 effect / 2 grid styles. Keys in `references/kit/subscription.md` |
+| A kit cannot *re-publish* UpBase styles | A product file applying `Text Base/Normal` to its own free text still needs UpBase. Components built here are unaffected — the style travels inside the instance |
 
 ### Step 6 — Verify
 
@@ -216,8 +241,8 @@ a throwaway instance. Anything that fails to move is unbound.
 
 ### Step 7 — Document and lay out the page
 
-Use the description format from `references/source/mode.md` Phase 6 verbatim. UpS ships to
-**web and mobile**, so both a `Web:` and a `Native:` line are in scope.
+Use the description format from `references/source/mode.md` Phase 6 verbatim. Which of the `Web:`
+and `Native:` lines are in scope comes from the data file's **Platform reach** (UpS ships to both).
 
 One addition specific to a wrapper, under `**Properties**`:
 
@@ -238,11 +263,13 @@ its column labels carry bare values rather than `Property=Value`. Applying the s
 template here produces a page that is wrong in four visible ways.
 
 The reference implementation is `❖ Form` in UpS (`5:20`), approved as the kit template 2026-09-11.
+Another kit uses the template page named in its own data file, and UpS's until it has one.
 
 UpBase's `_Docs / *` components are unpublished by design and cannot be imported; don't ask for
 them to be published, since the `_` prefix is what keeps documentation out of every subscriber's
-Assets panel. **UpS now has its own `_Docs / Page Header`** (`31:48804`) — use it. There is no
-`_Docs / Page Footer` in the kit, and a kit page does not need one.
+Assets panel. Each kit owns its own `_Docs / Page Header` (UpS: `31:48804`; others: the data
+file's *Local scaffolding*). A new kit without one builds it first, as a local unpublished
+component. A kit page does not need a footer.
 
 ## Handing over
 
@@ -250,10 +277,10 @@ Separate what's verified (with evidence), what's deliberately raw or omitted, an
 calls you couldn't make. Then state the chain, because it has two hops and people forget the second:
 
 ```
-UpBase edited → publish UpBase → UpS accepts → publish UpS → product files accept
+UpBase edited → publish UpBase → kit accepts → publish kit → product files accept
 ```
 
-Publishing is the user's action at both hops. A UpS wrapper doesn't see a UpBase fix until UpS
+Publishing is the user's action at both hops. A kit wrapper doesn't see a UpBase fix until the kit
 accepts that update, so a wrapper can be silently one version behind while looking correct. Say
 which hops are outstanding.
 
@@ -261,6 +288,9 @@ which hops are outstanding.
 
 | File | Contents |
 |---|---|
+| `references/kit/<kit>.md` | The kit's data file — copy `_template.md` for a new kit |
+| `references/kit/patterns.md` | Lessons that hold in any kit |
+| `references/upbase-known-issues.md` | UpBase defects every kit inherits |
 | `references/kit/wrapper-pattern.md` | The recipe, exposure semantics, curation fork, worked example, checklist |
 | `references/kit/subscription.md` | File keys, 4 collection keys, all 32 style keys, resolution rules |
 | `references/figma-api-gotchas.md` | Silent-failure traps — read before writing plugin code |

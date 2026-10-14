@@ -1,17 +1,22 @@
 ---
 name: product-screen-builder
-description: Rebuild, annotate or redesign product screens in UpBase product design files — today UpS Product 2026 (`9FAdrUvuA7q0VExwsAxNu6`), which consumes the UpS UI Kit — assembled only from kit component instances. Use this whenever the user wants to recreate or redraw a screen from a screenshot or reference image, "build the screen under Kho hàng", map a screen's anatomy to kit components, draw callouts naming the components on a screenshot, rebuild a flow's variants (error states, modal states, tabs), or make an improved / "tasteful" / proposal version of an existing screen with Mobbin references — even if they only paste a Figma link to a product file or name a module (Kho hàng, Đơn hàng, Tồn kho…). Also use it to log where the kit can't match a product screen. Do NOT use it to create or change components themselves — that is `ub-component-creator`, which this skill hands off to.
+description: Rebuild, annotate or redesign product screens in UpBase product design files — UpS Product 2026 (`9FAdrUvuA7q0VExwsAxNu6`, consuming UpS UI Kit) and any other product file registered under `references/products/` — assembled only from kit component instances. Use this whenever the user wants to recreate or redraw a screen from a screenshot or reference image, "build the screen under Kho hàng", map a screen's anatomy to kit components, draw callouts naming the components on a screenshot, rebuild a flow's variants (error states, modal states, tabs), or make an improved / "tasteful" / proposal version of an existing screen with Mobbin references — even if they only paste a Figma link to a product file or name a module (Kho hàng, Đơn hàng, Tồn kho…). Also use it to log where the kit can't match a product screen. Do NOT use it to create or change components themselves — that is `ub-component-creator`, which this skill hands off to.
 ---
 
 # Product screen builder
+
+Paths in this skill are relative to its own directory, `${CLAUDE_SKILL_DIR}`. It needs
+`ub-component-creator` installed beside it (same `skills/` folder): the changelog script and the gap
+log template live there, at `${CLAUDE_SKILL_DIR}/../ub-component-creator/`.
 
 Screens in a product file are **compositions of kit instances**, never components. The kit
 decides how every part looks; this skill decides which parts, how they're configured, and how
 they're arranged — and records every place the kit can't do what the screen needs.
 
 ```
-UpBase Design System ──▶ UpS UI Kit ──▶ UpS Product 2026   ← this skill writes here
-      (source)            (kit)          (product file)
+UpBase Design System ──▶ <product> UI Kit ──▶ <product> design file   ← this skill writes here
+      (source)               (kit)               (product file)
+e.g.                        UpS UI Kit          UpS Product 2026
 ```
 
 If the work means **changing a component** (adding a slot, a variant, a property), stop and hand
@@ -25,10 +30,17 @@ to every other screen and silently drifts from the kit.
 
 | File key | Product | Consumes | Read |
 |---|---|---|---|
-| `9FAdrUvuA7q0VExwsAxNu6` | UpS Product 2026 | UpS UI Kit `9c052aEvpV7gYLhwdatf6g` | `references/products/ups-product-2026.md`, `references/kit-map-ups.md` |
+| `9FAdrUvuA7q0VExwsAxNu6` | UpS Product 2026 | UpS UI Kit `9c052aEvpV7gYLhwdatf6g` | `references/products/ups-product-2026.md`, `references/kit-maps/ups.md` |
+A product file is **registered by its data file**: a file in `references/products/` (other than
+`_template.md`) whose **File key** row holds the target key — `grep -l "<file key>"
+${CLAUDE_SKILL_DIR}/references/products/*.md`. The table above lists the ones known when this skill
+was written; a team adds a product by adding one file (and a kit map under `references/kit-maps/` if
+it consumes a different kit), and those files survive updates. **A file key with no data file is
+not registered** — stop and ask the user to register it (README › *Registering your kit*) rather than
+borrowing UpS's data file; UpS's keys, ids and harvested tokens are wrong in any other file.
 
-A new product file is one new row plus one data file under `references/products/` (and a kit map
-if it consumes a different kit). Nothing else changes.
+The UpS files are the **worked example**: when a template field is unclear, look at how the UpS
+data file fills it.
 
 **Mode** comes from what the user asked for:
 
@@ -61,7 +73,8 @@ the claude.ai Figma connector (`get_screenshot`) while you wait.
 Pass `fileKey` on **every** `figma_execute`. Several files are connected at once and the active one
 moves on its own; a write into the kit or UpBase is silent and expensive.
 
-Then run `scripts/preflight-product.js` as the first `figma_execute`. It proves the file, that the
+Then run `scripts/preflight-product.js` as the first `figma_execute`, with `kitProbeKey` from the
+product data file's **Kit probe key** row. It proves the file, that the
 kit library actually resolves, and that nothing with the target screen name already exists (a
 timed-out call usually finished anyway — see `references/build-mechanics.md`).
 
@@ -76,12 +89,14 @@ before planning from scratch.
 ## Step 3 — Map the anatomy to kit components
 
 Region by region, name the kit component, the variant/property settings, and the content.
-`references/kit-map-ups.md` has the mapping, keys, property keys and known limits for every
+The kit map (`references/kit-maps/<kit>.md`) has the mapping, keys, property keys and known limits for every
 component used so far. Enumerate the kit before concluding something is missing — most "missing"
 things are a slot fill, a variant, or a component under another name.
 
-Anything the kit genuinely can't express is a **gap**. Check `docs/kit-gaps/<kit>.md` first — it
-may already be logged with an agreed workaround.
+Anything the kit genuinely can't express is a **gap**. Check the kit's gap log first — it may
+already be logged with an agreed workaround. Its path is the **Gap log** row of the product data
+file (UpS: `docs/kit-gaps/ups.md` in the design repo; a new kit starts from the plugin's
+`${CLAUDE_SKILL_DIR}/../ub-component-creator/references/kit/gap-log-template.md`).
 
 ## Step 4 — Proposal, then stop
 
@@ -132,7 +147,7 @@ lists what's reachable); the product file cannot import variables.
 
 ## Step 7 — Log gaps and hand over
 
-Append every new gap to `docs/kit-gaps/<kit>.md` using its entry format, and update the status of
+Append every new gap to the kit's gap log using its entry format, and update the status of
 existing ones you hit. Then report, in this order:
 
 1. **Where** — screen name, size, section.
@@ -144,8 +159,8 @@ existing ones you hit. Then report, in this order:
 
 Update the screen register in the product data file (screen → node id → status).
 
-Then log the session on the product file's `Changelog` page: paste `scripts/changelog/changelog.js`
-(repo root) into `figma_execute` with the product `fileKey` and call
+Then log the session on the product file's `Changelog` page: paste
+`${CLAUDE_SKILL_DIR}/../ub-component-creator/scripts/changelog/changelog.js` into `figma_execute` with the product `fileKey` and call
 `addChangelogEntry({ …, status: null, saveVersion: true })`. Name each screen or Global rules
 section you added or changed and link its node. If the work sent a fix upstream to the kit or
 UpBase, cross-link that file's entry under `related`. Anatomy-only sessions that change no
@@ -157,7 +172,8 @@ Draw on a **copy** of the reference image in its own section — never on the or
 
 - Section named `Anatomy / <Module> <nn>`, placed where it doesn't overlap existing sections; copy
   the style of any existing example section on the page (UpS has one: `Example` on
-  `↳ Specifications` — look it up by name; ids change when the file is reorganised).
+  `↳ Specifications` — look it up by name; ids change when the file is reorganised). A product
+  with none yet: copy UpS's style and say so.
 - Labels: the kit component's exact name (`Menu / Sidebar / Rail`, `GridTable / Stacked Cell`),
   24px bold, one colour; 1px leader lines ending in an arrow at the target
   (`setVectorNetworkAsync` — the sync setter throws).

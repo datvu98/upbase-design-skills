@@ -31,7 +31,7 @@ Playground · ---- · _Table of Content · _Changelog · ----- · COMPONENTS
 ## Gaps found by product screens
 
 Product screens are built by the `product-screen-builder` skill, which logs every place this kit
-can't do what a screen needs in **`docs/kit-gaps/ups.md`** (repo root). Read it before proposing a
+can't do what a screen needs in **`docs/kit-gaps/ups.md`** (in the UpBase Design System repo). Read it before proposing a
 kit change — the gap, the screen that hit it, the workaround in use and a proposed fix are there —
 and update an entry's status when a change lands (`in kit` → `published`).
 
@@ -781,7 +781,7 @@ product rebuilds it. It is also what every data cell of `GridTable / Row` become
 **Before building anything chart-shaped**, load the `dataviz` skill and run its
 `validate_palette.js`. UpBase's `Colors/Chart/Categorical/1…8` **fails** — keep UpS
 charts to series 1–5; the measured pairs are in the repo's own
-`scripts/figma-chart-sync/README.md` (repo root — not this skill's `scripts/`)
+`scripts/figma-chart-sync/README.md` (in the UpBase Design System repo — not this skill's `scripts/`)
 § Colour and in `Charts / Metric Tile`'s description.
 
 Run `scripts/kit/audit-wrappers.js` for the current state rather than trusting this line.
