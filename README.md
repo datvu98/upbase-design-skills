@@ -22,9 +22,9 @@ the screenshot"), or by name: `/ub-component-creator`, `/product-screen-builder`
 ## Install and update
 
 ```bash
-npx github:datvu-code/upbase-design-skills             # ~/.claude/skills (all projects)
-npx github:datvu-code/upbase-design-skills --project   # ./.claude/skills (this repo only)
-npx github:datvu-code/upbase-design-skills --dry-run   # show what would change
+npx github:datvu98/upbase-design-skills             # ~/.claude/skills (all projects)
+npx github:datvu98/upbase-design-skills --project   # ./.claude/skills (this repo only)
+npx github:datvu98/upbase-design-skills --dry-run   # show what would change
 ```
 
 Updating means running the same command again. Files shipped by the repo are overwritten. Files you

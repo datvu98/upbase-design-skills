@@ -11,8 +11,8 @@ machine also needs **Figma Desktop**.
 ## 2. Install the skills
 
 ```bash
-npx github:datvu-code/upbase-design-skills            # → ~/.claude/skills, for all your projects
-npx github:datvu-code/upbase-design-skills --project  # → ./.claude/skills, this repo only
+npx github:datvu98/upbase-design-skills            # → ~/.claude/skills, for all your projects
+npx github:datvu98/upbase-design-skills --project  # → ./.claude/skills, this repo only
 ```
 
 Pick **one** location. The installer warns if it finds the same skill in both, because both copies
@@ -20,7 +20,7 @@ load and Claude may pick either. Manual alternative: clone the repo and copy `sk
 those folders.
 
 The repo is private, so `npx` uses your own git credentials. If it can't clone, check
-`git ls-remote https://github.com/datvu-code/upbase-design-skills` works, or run `gh auth login`
+`git ls-remote https://github.com/datvu98/upbase-design-skills` works, or run `gh auth login`
 then `gh auth setup-git`.
 
 ## 3. figma-console MCP + Desktop Bridge
