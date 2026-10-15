@@ -1,9 +1,11 @@
-# Kit map: UpS UI Kit → product screens
+# Kit usage: UpS UI Kit on product screens
 
-> **Scope:** product files consuming UpS UI Kit (`9c052aEvpV7gYLhwdatf6g`). UpS's own live data, and
-> the filled-in example of `kit-maps/_template.md` — another kit gets its own file. What to reach for per
-> screen region, how to import it, and which property keys to set. Verified in UpS Product 2026,
-> 2026-09-28 → 09-30.
+> **Example: UpS's own data, in the v0.4 layout.** In a team's repo this file lives at
+> `upbase/ups/kit-usage.md`. To use it for UpS, copy the whole `examples/ups/` folder to `upbase/ups/` in
+> the repo where you run Claude (the UpBase Design System repo), and move the gap log there as
+> `gap-log.md`. Another team never copies these values; they start from
+> `skills/_shared/product-template/`.
+> Verified in UpS Product 2026, 2026-09-28 → 10-14.
 
 ## Contents
 

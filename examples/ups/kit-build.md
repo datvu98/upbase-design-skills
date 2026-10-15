@@ -1,9 +1,10 @@
-# Kit: UpS UI Kit
+# Kit build notes: UpS UI Kit
 
-> **Scope: ui-kit-builder, this kit only.** UpS's own live data, and the filled-in example of
-> `kits/_template.md`. Other kits never read it except as an example. Constants for UpS. Read it **before**
-> `SKILL.md`, which carries the procedure this fills in. A new kit is a copy of this
-> file with its own values — one file, nothing else changes.
+> **Example: UpS's own data, in the v0.4 layout.** In a team's repo this file lives at
+> `upbase/ups/kit-build.md`. To use it for UpS, copy the whole `examples/ups/` folder to `upbase/ups/` in
+> the repo where you run Claude (the UpBase Design System repo), and move the gap log there as
+> `gap-log.md`. Another team never copies these values; they start from
+> `skills/_shared/product-template/`.
 
 | | |
 |---|---|
@@ -17,30 +18,15 @@
 
 ## Page list
 
-73 pages, read from the file on 2026-10-14. Names carrying `❖` are component pages; the rest are
-structural. **Most pages now carry UpBase's own name** (`❖ Segmented`, `❖ Radio`, `❖ Spin`,
-`❖ Progress`…), following the naming decision that wrappers keep UpBase's exact name. Older notes
-in this file, including the triage below, still use the earlier product names (`SegmentedButton`,
-`RadioButton`, `Loading`, `ProgressIndicator`…). Read them as the same pages.
-
-```
-_Playground · ---- · _Thumbnail · _Docs · _Table of Content · _Changelog · ----- · COMPONENTS
-❖ FilterBar · TableToolbar · Chart · Form · Button · Input · Select / Combobox · DatePicker
-❖ TimePicker · Menu · GridTable · CardTable · Cards · UserMenu · Modal · TabGroup · Breadcrumb
-❖ Calendar · PageHeader · Drawer · Avatar · Checkbox · Radio · ExpandableText · Upload
-❖ IllustratedMessage · Tag · List · ListItem · Dropdown · Collapse · Rate · RichTextEditor
-❖ ScrollBar · Switch · Pagination · ColorPicker · Timeline · Tree · Segmented · Image · Carousel
-❖ Message · Popconfirm · Progress · Skeleton · Spin · Tooltip · Badge · InputNumber · Steps
-❖ MenuDropdown · Divider · FloatButton · Timestamp · Logo · VideoEmbed · Chat · Descriptions
-❖ Typography · Link · Anchor · Cascader · Popover · Alert · Notification
-```
-
-Re-read it (`figma.root.children.map(p => p.name)`) before relying on a page name; the list moves.
+Not copied here: the skill re-reads it from the file (`figma.root.children.map(p => p.name)`),
+because a copy goes stale. On 2026-10-14 the kit had 73 pages, and most of them now carry UpBase's
+own names (`❖ Segmented`, `❖ Radio`, `❖ Spin`…). Older notes below still use earlier product names
+(`SegmentedButton`, `RadioButton`, `Loading`…) for the same pages.
 
 ## Gaps found by product screens
 
 Product screens are built by the `product-screen-builder` skill, which logs every place this kit
-can't do what a screen needs in **`docs/kit-gaps/ups.md`** (in the UpBase Design System repo). Read it before proposing a
+can't do what a screen needs in **`gap-log.md`** in this folder (today still `docs/kit-gaps/ups.md` in the UpBase Design System repo). Read it before proposing a
 kit change — the gap, the screen that hit it, the workaround in use and a proposed fix are there —
 and update an entry's status when a change lands (`in kit` → `published`).
 

@@ -9,7 +9,7 @@
 //   const root = await figma.getNodeByIdAsync('<a built screen id>');
 //   return await harvestTokens(root, /colorBg|padding|margin|Space\//);
 //
-// Record new ids in the product data file's "Harvested tokens" table.
+// Record new ids in upbase/<product>/product-file.md › "Harvested tokens".
 // ─────────────────────────────────────────────────────────────────────────────
 
 async function harvestTokens(root, pattern = /./) {

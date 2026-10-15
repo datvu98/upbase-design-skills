@@ -44,10 +44,10 @@ first case: Xuất nhập 09's reference has column dividers, every other list u
 GridTable, so 09 uses the plain GridTable (user, 2026-10-02).
 
 Before configuring a component, look at how the screens already in the file configure it (the
-screen register in the product data file, and the kit map `references/kit-maps/<kit>.md`, which
+screen register in `upbase/<product>/product-file.md`, and `upbase/<product>/kit-usage.md`, which
 records the agreed configuration). If the reference disagrees, use the established one and list the difference in the
-handover. If no screen has used the component yet, follow the reference and the kit map. User
-preferences recorded in the kit map (e.g. single row actions are icon-only `Default` buttons)
+handover. If no screen has used the component yet, follow the reference and `kit-usage.md`. User
+preferences recorded in `kit-usage.md` (e.g. single row actions are icon-only `Default` buttons)
 apply the same way.
 
 ## What "faithful" still means
@@ -61,8 +61,8 @@ Within that rule, match, in this order of importance:
    row; the same columns in the same order.
 3. **State** — errors, disabled, active tab/menu item, expanded group, modal open.
 4. **Proportions** — column widths, relative spacing. Table column alignment is **not** taken from
-   the reference; it follows the kit map's rule, with the header matching its cells. UpS: left for
-   everything, right for decimal numbers (`kit-maps/ups-ui-kit.md` › Column alignment). A kit map with no
+   the reference; it follows the rule in `kit-usage.md`, with the header matching its cells. UpS: left for
+   everything, right for decimal numbers (`kit-usage.md` › *Table rules*; UpS's in `examples/ups/kit-usage.md`). A `kit-usage.md` with no
    rule yet → use the UpS one and say so in the handover.
 
 ## Allowed adjustments
@@ -113,4 +113,4 @@ richest base once, then **clone and diff**:
 - [ ] `check-overrides.js`: 0 layout overrides, or each one user-requested and listed
 - [ ] Screenshot compared with the reference, region by region
 - [ ] Every deviation listed with a GAP id; new gaps appended to the log
-- [ ] Screen register updated in the product data file
+- [ ] Screen register updated in `product-file.md`

@@ -21,10 +21,11 @@ Day to day you'll mostly use `ui-kit-builder` and `product-screen-builder`. A ch
 file reaches every product, so talk it through with the UpBase owner first, then use
 `design-system-builder`.
 
-UpS (UpS UI Kit + UpS Product 2026) is the first team on this chain. Its data files
-(`ups-ui-kit.md`, `ups-product-2026.md`) are UpS's live data. They also serve as the **worked
-example** of a filled-in template: copy their shape, never their values. A skill only reads a team's
-data file when that team's Figma file is the target.
+The skills hold **no product data**. Each team keeps its own in **its design repo**, under
+`upbase/<product>/`: four files the skills read and update as you work (kit decisions and status,
+how to use the kit on screens, the product file's screens and tokens, and the gap log). The team
+commits them, so everyone shares the same memory. UpS was the first team on this chain; its full
+data is in `examples/ups/` as a worked example. The second is **uplms**.
 
 You invoke the skills by describing the task ("wrap Select into our kit", "rebuild this screen from
 the screenshot"), or by name: `/ui-kit-builder`, `/product-screen-builder`, `/design-system-builder`.
@@ -40,48 +41,42 @@ npx github:datvu98/upbase-design-skills --project   # ./.claude/skills (this rep
 npx github:datvu98/upbase-design-skills --dry-run   # show what would change
 ```
 
-Updating means running the same command again. Files shipped by the repo are overwritten. Files you
-added are kept: your kit's data file, your product's data file. The installer lists them so you can
-see they survived. **Don't edit shipped files.** Your edits are lost on the next update. Put
-anything kit-specific in your own data files, and send general fixes upstream (see *Contributing*).
+Updating means running the same command again. The installer overwrites the skills and removes files
+the repo has dropped. It never touches your product data, which lives in your own repo. **Don't edit
+the installed skill files**, because the next update overwrites them. Send general fixes upstream
+(see *Contributing*).
 
 Restart Claude Code after installing. Setup (Figma MCP, Desktop Bridge, token, permissions) is in
 **[SETUP.md](SETUP.md)**.
 
-## Registering your kit
+## Registering a product
 
-A skill recognises a Figma file **only through a data file whose `File key` row holds that file's
-key**. On an unknown key it stops and offers to help you create one. It never borrows UpS's data:
-UpS's node ids and conventions would land in your file.
+Do this once, at the root of your team's design repo, before the first build:
 
-**1. Kit → `ui-kit-builder`**
+```bash
+npx github:datvu98/upbase-design-skills init uplms
+```
 
-1. Copy `skills/ui-kit-builder/kits/_template.md` to `skills/ui-kit-builder/kits/<your-kit>.md`.
-2. Fill the header table. The **File key** is the 22 characters after `figma.com/design/` in the
-   kit's URL. **Platform reach** (Web / Mobile / both) and **Owner** are required.
-3. Answer **Decisions to make once**: wrapper naming, page shapes, template page, docs header.
-   UpS's answers are listed beside each for reference. These are the choices that look like
-   mistakes later if nobody wrote them down.
-4. Fill the page list and page triage. The status table and notes grow as you build.
-5. Create a gap log from `ui-kit-builder/kits/_gap-log-template.md` **in your own design repo**, not
-   inside the skills folder, and put its path in the **Gap log** row.
-6. Create an empty page called `_Changelog` in the kit file.
+This creates `upbase/uplms/` with four templates:
 
-**2. Product file → `product-screen-builder`**
+| File | What it is | Fill now |
+|---|---|---|
+| `kit-build.md` | the kit's identity, decisions, status | **File key** of the kit (this is what registers it), platform reach, owner, and the *Decisions to make once* table |
+| `kit-usage.md` | how to use each kit component on screens | nothing, it grows as you build |
+| `product-file.md` | the design file's pages, screens, shell, tokens | **File key** of the product file, **Kit probe key** (any published kit component's key, e.g. your Button), changelog page |
+| `gap-log.md` | what the kit can't do yet | nothing |
 
-1. Copy `skills/product-screen-builder/references/products/_template.md` to
-   `.../products/<your-product>.md` and fill it. **Kit probe key** = the key of any published kit
-   component, for example your Button.
-2. Copy `.../kit-maps/_template.md` to `.../kit-maps/<your-kit>.md`. It starts nearly empty and
-   fills in as screens get built.
-3. Create an empty `Changelog` page in the product file.
+Then create an empty `_Changelog` page in the kit and a `Changelog` page in the product file, and
+**commit `upbase/uplms/`**.
 
-You can also ask Claude to do it: *"register our kit `<url>` with ui-kit-builder"*. It will
-walk you through the template and ask for the decisions instead of guessing them.
+You can also ask Claude to fill it in: open Claude in the repo and say *"register our kit `<url>` and
+product file `<url>` for uplms"*. It reads the facts from Figma and **asks you** for the decisions
+instead of guessing them. `skills/_shared/product-template/EXAMPLE.md` shows UpS's answers for
+reference.
 
-**Where the data files live.** Locally, they survive updates. Each teammate needs the same files,
-though. Recommended: commit them to this repo via a pull request (ask the owner for access). Then
-everyone gets them with `npx`, and the file key → data file lookup works the same on every machine.
+The skills find a product **by the Figma file key**, in `upbase/*/` of the repo Claude is running in.
+Run Claude somewhere else and they'll say the file isn't registered. That's deliberate: they stop
+rather than guess.
 
 ## How a build goes
 
@@ -124,7 +119,7 @@ Overrides on nested UpBase instances don't survive in product files
 |---|---|---|
 | UpBase Design System file, its tokens and components | UpBase (Dat Vu) | <channel — to be agreed> |
 | These skills | Dat Vu | pull request / issue on this repo |
-| Your kit, product files, gap log, data files | your team | — |
+| Your kit, product files, and `upbase/<product>/` | your team | — |
 
 > Governance between teams is not final yet: who reviews UpBase requests, publish cadence, and how
 > breaking changes are announced beyond the Changelog page. This section will be updated.
@@ -133,7 +128,7 @@ Overrides on nested UpBase instances don't survive in product files
 
 - **Lessons that hold for any kit** go to `ui-kit-builder/references/patterns.md`,
   `_shared/references/figma-api-gotchas.md` or `_shared/references/upbase-known-issues.md` by pull request, so every team gets them. Kit-specific
-  lessons stay in your own data file.
+  lessons stay in your own `upbase/<product>/kit-build.md`.
 - Added or renamed a file under `skills/`? Add its entry to `GUIDE.md` section 3 and run
   `node bin/check-guide.js`.
 - After changing a skill, run its dry-run prompts in `evals/` (see `evals/README.md`).
@@ -153,19 +148,19 @@ skills/
     scripts/                   helpers, audit-system
   ui-kit-builder/              a product's UI kit
     SKILL.md
-    kits/                      _template.md, _gap-log-template.md, ups-ui-kit.md, <your-kit>.md
     references/                patterns, wrapper-pattern, page-template
     scripts/                   make-wrapper, resolve-remote, audit-wrappers
   product-screen-builder/      a product design file
     SKILL.md
-    references/
-      products/                _template.md, ups-product-2026.md, <your-product>.md
-      kit-maps/                _template.md, ups-ui-kit.md, <your-kit>.md
-      rebuild-mode.md  proposal-mode.md  build-mechanics.md
+    references/                rebuild-mode, proposal-mode, anatomy-mode, build-mechanics
     scripts/                   preflight-product, helpers, harvest-tokens, walk-integrity, check-overrides
   _shared/                     not a skill: read by all three
     references/                conventions, upbase-library, figma-api-gotchas, verification, tokens,
                                upbase-known-issues
     scripts/                   preflight, check-reflow, audit-coverage, audit-platform, audit-reuse,
                                changelog/changelog.js
+    product-template/          kit-build, kit-usage, product-file, gap-log, EXAMPLE: copied by `init`
+examples/ups/                  UpS's full data in the upbase/<product>/ layout (not installed)
+
+<your design repo>/upbase/<product>/    your team's data: kit-build, kit-usage, product-file, gap-log
 ```

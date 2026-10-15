@@ -125,7 +125,8 @@ Build in small calls, read back, and guard against duplicates.
 2. **Known issues.** If you fixed something in `_shared/references/upbase-known-issues.md`, move it
    to *Resolved*. If you changed behaviour that moves instances, add a row to *Behaviour changes*.
 3. **Report**: verified (with numbers), deliberately raw or omitted, judgement calls. For a breaking
-   change, list every registered kit (`ui-kit-builder/kits/*.md`) as affected. Then the publish
+   change, list every product with a kit as affected: the folders under `upbase/` in this repo
+   (`ls upbase/*/kit-build.md`), plus any other team you know consumes UpBase. Then the publish
    chain:
 
    ```

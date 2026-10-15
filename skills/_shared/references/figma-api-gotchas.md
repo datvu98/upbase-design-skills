@@ -499,7 +499,7 @@ t.maxLines = 3;                   // 4
 
 **Changing `layoutMode` on the parent drops the truncation**, the same way it drops a bound width.
 Re-apply steps 3–4 afterwards and read `maxLines` back **in a separate `figma_execute`** — it reads
-stale within the call that set it (the `Line Item` case in `ui-kit-builder/kits/ups-ui-kit.md` hit the same thing).
+stale within the call that set it (the `Line Item` case in `examples/ups/kit-build.md` hit the same thing).
 
 ## A styled text range survives instancing but not a text override
 

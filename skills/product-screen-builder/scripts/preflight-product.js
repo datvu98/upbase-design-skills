@@ -6,7 +6,7 @@
 //
 //   const pf = await preflightProduct({
 //     fileKey: '9FAdrUvuA7q0VExwsAxNu6',           // the product file you intend to write to
-//     kitProbeKey: 'ad019f17…',                     // any published kit component — from the product data file
+//     kitProbeKey: 'ad019f17…',                     // any published kit component — from upbase/<product>/product-file.md
 //     screenName: 'Kho hàng 03',                    // prefix of the frame you're about to build
 //   });
 //   if (pf.blocked) return pf;                       // STOP — create nothing
@@ -25,9 +25,9 @@ async function preflightProduct({ fileKey, screenName = null, kitProbeKey = null
   const pass = (name, detail) => out.checks.push({ name, ok: true, detail });
 
   if (!fileKey) { fail('fileKey', 'pass the product fileKey you intend to write to'); return out; }
-  // Each product file consumes its own kit, so the probe comes from its data file ("Kit probe key").
+  // Each product file consumes its own kit, so the probe comes from upbase/<product>/product-file.md ("Kit probe key").
   // UpS Product 2026 → UpS `Button / Basic` 'ad019f1790ab546845e50debf54d2bc5a710a6bf'.
-  if (!kitProbeKey) { fail('kitProbeKey', 'pass kitProbeKey — the "Kit probe key" row of references/products/<product>.md'); return out; }
+  if (!kitProbeKey) { fail('kitProbeKey', 'pass kitProbeKey — the "Kit probe key" row of upbase/<product>/product-file.md'); return out; }
 
   // 1. File identity
   const actual = typeof figma.fileKey === 'string' ? figma.fileKey : null;

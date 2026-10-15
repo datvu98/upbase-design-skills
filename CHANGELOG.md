@@ -2,6 +2,39 @@
 
 Changes to the skills themselves. Changes to the Figma files are on each file's `_Changelog` page.
 
+## 0.4.0 — 2026-10-15
+
+Product data moves out of the skills and into each team's own repo.
+
+**Why.** A kit's and a product file's data is the skills' memory after every build: what's built and
+why, how to use the kit, which screens exist, what the kit can't do yet. Kept inside the installed
+skills, every teammate had their own copy that drifted, sharing it meant a pull request to the
+skills repo after every session, and there was no history. One product's data was also spread over
+three files in two skills.
+
+**Changed**
+- Each product's data lives in the team's repo at **`upbase/<product>/`**: `kit-build.md` (was
+  `ui-kit-builder/kits/<kit>.md`), `kit-usage.md` (was `product-screen-builder/references/kit-maps/<kit>.md`),
+  `product-file.md` (was `…/references/products/<product>.md`) and `gap-log.md`. The team commits it.
+- Step 0 of `ui-kit-builder` and `product-screen-builder` finds the product by file key in
+  `upbase/*/` of the project Claude runs in. Not found → stop and offer to register.
+  `design-system-builder` lists `upbase/*/` as the kits affected by a breaking change.
+- `ui-kit-builder` now also records each component it builds in `kit-usage.md`, so screen builders can
+  use it right away.
+- UpS's data moved to **`examples/ups/`**, which is not installed. It is the full worked example, and the
+  copy UpS moves to `upbase/ups/` in its own repo.
+
+**Added**
+- `skills/_shared/product-template/`: the four templates plus `EXAMPLE.md`, a short filled-in version
+  with UpS's values. The templates carry rules that keep the memory lean: current state and decisions
+  only, no copies of what Figma can tell you, and general lessons go to `patterns.md`.
+- `npx github:datvu98/upbase-design-skills init <product>` creates `upbase/<product>/` from the
+  templates. It refuses if the folder already exists.
+- The installer moves data a team kept inside the skills (≤ 0.3) to `_rescued-data/` instead of
+  deleting it, and says where to put it.
+- GUIDE.md: a section on product data (who reads and writes which file, why it lives in the repo),
+  a rewritten registration workflow, entries for the templates, and an FAQ.
+
 ## 0.3.0 — 2026-10-15
 
 **Added**

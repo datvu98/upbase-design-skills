@@ -2,7 +2,7 @@
 
 > **Scope: ui-kit-builder, every kit.** Lessons learned building UpS UI Kit that are about *being a kit
 > over UpBase*, not about UpS. Each was measured, usually after the plausible alternative failed.
-> The UpS-specific record they came from is `kits/ups-ui-kit.md` — read it for the full story,
+> The UpS-specific record they came from is `examples/ups/kit-build.md` in the skills repo — read it for the full story,
 > but rely on this file for the rule. API-level traps are in `_shared/references/figma-api-gotchas.md`;
 > this file is one level up — how kit components are put together.
 
@@ -179,7 +179,7 @@ container), so a row-major kit table (a card per record, a band spanning a row) 
 ## Audit flags that are expected
 
 - `audit-wrappers` → *"Nested layer still named …"*: expected when the kit's naming decision is to
-  keep UpBase's name (UpS). Record the decision in the data file and leave it.
+  keep UpBase's name (UpS). Record the decision in `kit-build.md` and leave it.
 - `audit-wrappers` → *"No remote UpBase instance anywhere — is this hand-built?"* on a composition
   built entirely from kit wrappers: expected and correct. The check looks one level down.
 - `audit-reuse` → *"binds another component's tokens → Components/Alert/Global/fontSize"*: the

@@ -1,6 +1,6 @@
 ---
 name: product-screen-builder
-description: Build, annotate or redesign product screens in a UpBase product design file (UpS Product 2026, or any product registered under references/products/), assembled only from the product's UI kit instances. Use it to recreate a screen from a screenshot or reference image ("rebuild this screen", "build the screens under Kho hàng"), rebuild a flow's states (errors, modals, tabs), map a screen's anatomy to kit components or draw callouts naming them, make an improved / "tasteful" / proposal version of an existing screen with Mobbin references, or log where the kit can't match a screen. Use it whenever someone pastes a product file link or names a product module, even without saying "screen". Do not use it to create or change components: kit components are ui-kit-builder, UpBase components are design-system-builder.
+description: Build, annotate or redesign product screens in a UpBase product design file (UpS Product 2026, uplms, or any product registered in the repo's upbase/ folder), assembled only from the product's UI kit instances. Use it to recreate a screen from a screenshot or reference image ("rebuild this screen", "build the screens under Kho hàng"), rebuild a flow's states (errors, modals, tabs), map a screen's anatomy to kit components or draw callouts naming them, make an improved / "tasteful" / proposal version of an existing screen with Mobbin references, or log where the kit can't match a screen. Use it whenever someone pastes a product file link or names a product module, even without saying "screen". Do not use it to create or change components: kit components are ui-kit-builder, UpBase components are design-system-builder.
 ---
 
 # Product screen builder
@@ -28,20 +28,25 @@ Paths below are relative to this skill's folder (`${CLAUDE_SKILL_DIR}`). Shared 
 
 ## Step 0: Which product, which mode?
 
-The product is identified by the **file key** of the write target, never by a module name. Find its
-data file:
+The product is identified by the **file key** of the write target, never by a module name. Its
+data lives in **the repo you're running in**, one folder per product: `upbase/<product>/`, holding
+`product-file.md` (or `product-file-<name>.md` when a product has several design files),
+`kit-usage.md`, `gap-log.md` and `kit-build.md`. The team commits it, so everyone shares it. Find
+the folder:
 
 ```
-grep -l "<file key>" ${CLAUDE_SKILL_DIR}/references/products/*.md
+grep -l "<file key>" upbase/*/product-file*.md
 ```
 
-- **One match**: read it, then the kit map it names (`references/kit-maps/<kit>.md`). The data file
-  holds the pages and sections, the screen register, the shared shell, harvested tokens and the gap
-  log path. UpS Product 2026 (`9FAdrUvuA7q0VExwsAxNu6`) → `products/ups-product-2026.md` +
-  `kit-maps/ups-ui-kit.md`.
-- **No match**: not registered. Stop and offer to register it with the user from
-  `references/products/_template.md` (and `kit-maps/_template.md` for a new kit). Never borrow UpS's
+- **One match**: read that `product-file*.md` and the `kit-usage.md` beside it. Together they hold
+  the pages and sections, the screen register, the shared shell, harvested tokens, and how to use
+  each kit component. `gap-log.md` is opened at Step 3.
+- **No match**: not registered. Stop and offer to register it with the user. If the product's folder
+  exists (its kit is registered), copy `_shared/product-template/product-file.md` into it. Otherwise
+  run `npx github:datvu98/upbase-design-skills init <product>`. Fill the header **with their
+  answers**. `_shared/product-template/EXAMPLE.md` shows UpS's values for reference. Never copy UpS's
   data: its node ids, keys and harvested tokens are wrong in any other file.
+- **No `upbase/` folder at all**: you are probably not running in the team's repo. Ask where it is.
 - **A kit or the UpBase key**: wrong skill (table above).
 
 **The mode** comes from what the user asked for. Unsure between Rebuild and Proposal? Ask: they have
@@ -70,7 +75,7 @@ If the file isn't listed, the Desktop Bridge plugin isn't open in it. Ask the us
 (Plugins → Development → Figma Desktop Bridge). Pass `fileKey` on **every** `figma_execute`: several
 files are connected at once, and a write into the kit or UpBase is silent and expensive.
 
-Run `scripts/preflight-product.js` first, with `kitProbeKey` from the data file's **Kit probe key**
+Run `scripts/preflight-product.js` first, with `kitProbeKey` from `product-file.md`'s **Kit probe key**
 row. It proves the file, that the kit library resolves, and that a timed-out earlier call didn't
 already build this screen.
 
@@ -80,7 +85,7 @@ Screenshot the reference at a scale where text is legible (`figma_capture_screen
 on a ~1340px image). Write down the **exact** content: every label, placeholder, count and state,
 which toggle is on, which radio is checked, which fields are in error and what the error says.
 Screens in one module are usually variants of each other, so diff against the screens already built
-(the data file's *Screen register*) before planning from scratch.
+(`product-file.md` › *Screen register*) before planning from scratch.
 
 ## Step 3: Map the anatomy to kit components
 
@@ -91,8 +96,8 @@ reference**: configure a component the way the other screens do, and list the di
 
 Enumerate the kit before concluding something is missing. Most "missing" things are a slot fill, a
 variant, or a component under another name (`_shared/references/upbase-library.md` › *What UpBase
-calls things*). What the kit genuinely can't express is a **gap**. Check the kit's gap log first
-(path in the data file), because it may already have an agreed workaround.
+calls things*). What the kit genuinely can't express is a **gap**. Check `gap-log.md` first,
+because it may already have an agreed workaround.
 
 ## Step 4: Propose, then stop
 
@@ -118,7 +123,7 @@ call, because a node created in the same call as the slot it goes into gets a st
 crashes later traversals:
 
 1. **Shell**: clone a finished screen of the same module when one exists. It carries the header,
-   navigation, banners and floating buttons already configured (the data file's *Shell*).
+   navigation, banners and floating buttons already configured (`product-file.md` › *Shell*).
 2. Empty structural frames inside slots.
 3. Instances into those frames, one region per call.
 4. Content, states, truncation.
@@ -142,9 +147,9 @@ through a kit component's own instance-swap property.
 
 ## Step 7: Log and hand over
 
-1. **Gap log**: append every new gap in its entry format, and update the status of ones you hit.
-2. **Screen register**: update the data file (screen → node id → notes). A configuration rule the
-   user agreed on goes in the kit map.
+1. **`gap-log.md`**: append every new gap in its entry format, and update the status of ones you hit.
+2. **`product-file.md`**: update the *Screen register* (screen → node id → notes). A configuration rule the
+   user agreed on goes in `kit-usage.md`.
 3. **Changelog**: paste `_shared/scripts/changelog/changelog.js` into `figma_execute` with the product
    `fileKey`, then call
    `addChangelogEntry({ date, title, author: '<your name> · with Claude', status: null, sections, saveVersion: true })`.
@@ -166,9 +171,10 @@ always a person's action.
 
 | File | Open it at |
 |---|---|
-| `references/products/<product>.md` | Step 0, always |
-| `references/kit-maps/<kit>.md` | Steps 0 and 3 |
-| `references/products/_template.md` · `kit-maps/_template.md` | registering a product |
+| `upbase/<product>/product-file*.md` (in the repo) | Step 0, always; update at Step 7 |
+| `upbase/<product>/kit-usage.md` | Steps 0 and 3 |
+| `upbase/<product>/gap-log.md` | Step 3; update at Step 7 |
+| `_shared/product-template/` (+ `EXAMPLE.md`) | registering a product |
 | `references/rebuild-mode.md` · `proposal-mode.md` · `anatomy-mode.md` | Step 0, for the mode |
 | `_shared/references/upbase-library.md` | Step 3: antd vocabulary |
 | `references/build-mechanics.md` | before the first write (Step 5) |

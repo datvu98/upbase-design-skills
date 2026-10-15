@@ -1,14 +1,14 @@
 {
   "skill_name": "ui-kit-builder",
-  "note": "Dry runs: every prompt is run read-only and stops at the proposal. They need Figma Desktop with the Desktop Bridge open in UpS UI Kit, UpBase Design System and (eval 3) an unregistered kit.",
+  "note": "Dry runs: read-only, stop at the proposal. Run them from a project whose upbase/ups/ holds UpS's data (copy examples/ups/ there, plus a gap-log.md). Figma Desktop needs the Desktop Bridge open in UpS UI Kit, UpBase Design System and one unregistered kit.",
   "evals": [
     {
       "id": 1,
       "name": "existing-component-found-in-kit",
       "prompt": "Can you wrap UpBase's Segmented into our UpS kit as SegmentedButton? https://www.figma.com/design/9c052aEvpV7gYLhwdatf6g/UpS-UI-Kit",
-      "expected_output": "Identifies UpS UI Kit from the key, reads ups-ui-kit.md, enumerates the kit and finds the existing SegmentedButton page/component before proposing anything; either reports it already exists or proposes a fix to it. Does not build.",
+      "expected_output": "Identifies UpS UI Kit from the key, reads upbase/ups/kit-build.md, enumerates the kit and finds the existing SegmentedButton page/component before proposing anything; either reports it already exists or proposes a fix to it. Does not build.",
       "assertions": [
-        "Identified the kit by its file key and read the UpS kit data file",
+        "Identified the kit by its file key and read upbase/ups/kit-build.md",
         "Enumerated the kit's own components before searching or proposing",
         "Reported that SegmentedButton (or a Segmented wrapper) already exists in the kit, rather than proposing a new duplicate",
         "Created or modified nothing in Figma"
@@ -32,10 +32,10 @@
       "id": 3,
       "name": "unregistered-kit-stops",
       "prompt": "Add a Rating component to our kit please — https://www.figma.com/design/aNp9zYd1UGt4Ka7CblDEFN/UpBeauty-UI-Library",
-      "expected_output": "Finds no data file for aNp9zYd1UGt4Ka7CblDEFN, stops, explains the kit isn't registered, offers to register it from kits/_template.md and asks the user for the decisions (platform reach, naming, owner) — does not borrow UpS's data and does not build.",
+      "expected_output": "Finds no data file for aNp9zYd1UGt4Ka7CblDEFN, stops, explains the kit isn't registered, offers to register it from _shared/product-template/ and asks the user for the decisions (platform reach, naming, owner) — does not borrow UpS's data and does not build.",
       "assertions": [
         "Looked for a data file matching the file key and found none",
-        "Said the kit is not registered and offered to register it from the template",
+        "Said the kit is not registered and offered to register it (init or copying _shared/product-template/ to upbase/<product>/)",
         "Asked the user for the template decisions (e.g. platform reach, naming, owner) instead of filling them in itself",
         "Did not use UpS's data file, node ids or conventions for this kit",
         "Created or modified nothing in Figma"

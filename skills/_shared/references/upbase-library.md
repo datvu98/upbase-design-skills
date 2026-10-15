@@ -13,7 +13,7 @@ across renames and edits, names are not.
 | Role | Name | Key |
 |---|---|---|
 | The library | **UpBase Design System** | `BoGaG48v9BfY7LkMtFs4zh` |
-| A kit | each kit's data file in `ui-kit-builder/kits/` | e.g. UpS UI Kit `9c052aEvpV7gYLhwdatf6g` |
+| A kit | `upbase/<product>/kit-build.md` in the team's repo | e.g. UpS UI Kit `9c052aEvpV7gYLhwdatf6g` |
 
 The UpBase file was called `Ant Design Components` and then `Upbase Components` before its current
 name. **Match on the key, never the name** — any note, script or description still naming the old

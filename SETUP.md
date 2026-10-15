@@ -84,7 +84,23 @@ Publishing is always done by a person in Figma. The skills never publish.
 | **Mobbin** MCP | Proposal mode in `product-screen-builder` (pattern research) |
 | **dataviz** skill | anything chart-shaped. Run its palette validator first, see `upbase-known-issues.md` › chart palette |
 
-## 7. Register your kit
+## 7. Register your product
 
-The skills stop on a file key they don't know. Do this once, before your first build. Steps are in
-README › *Registering your kit*.
+The skills stop on a Figma file they don't know. Do this once, before your first build, **at the root
+of your team's design repo**:
+
+```bash
+npx github:datvu98/upbase-design-skills init uplms
+```
+
+Fill the headers, then commit `upbase/uplms/`. The steps are in README › *Registering a product*.
+
+**Always open Claude in that repo.** The skills look for `upbase/<product>/` in the project Claude is
+running in.
+
+### Upgrading from 0.3 or earlier
+
+If you put data files inside the installed skills (`ui-kit-builder/kits/…`,
+`product-screen-builder/references/products/…`), the update moves them to `_rescued-data/` in the
+skills folder and prints where they went. Move them into `upbase/<product>/` as `kit-build.md`,
+`kit-usage.md` and `product-file.md`, then commit. UpS's own data is in the repo's `examples/ups/`.

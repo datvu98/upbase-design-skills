@@ -33,7 +33,7 @@ function makeFrame(name, layoutMode = 'VERTICAL') {
 // Call after the node is inside an auto-layout parent (the setters throw before that).
 function fill(node, vertical = 'HUG') { node.layoutSizingHorizontal = 'FILL'; node.layoutSizingVertical = vertical; }
 
-// Bind a spacing property to a harvested variable id (see the product data file).
+// Bind a spacing property to a harvested variable id (see upbase/<product>/product-file.md › Harvested tokens).
 async function bindSpace(node, prop, variableId) {
   const v = await figma.variables.getVariableByIdAsync(variableId);
   if (!v) throw new Error(`variable ${variableId} not found — re-harvest tokens`);

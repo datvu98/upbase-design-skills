@@ -13,6 +13,7 @@ Cài đặt và cấu hình: [README.md](README.md) · [SETUP.md](SETUP.md). L�
 3. [Danh mục file](#3-danh-mục-file)
 4. [Script nào an toàn để chạy](#4-script-nào-an-toàn-để-chạy)
 5. [Bảo trì bộ skill](#5-bảo-trì-bộ-skill)
+6. [Câu hỏi thường gặp](#6-câu-hỏi-thường-gặp)
 
 ---
 
@@ -63,12 +64,52 @@ Kiểm tra (chỉ đọc) → Đề xuất → DỪNG chờ duyệt → Build �
 - **Bàn giao**: nêu rõ cái gì đã verify (có số liệu), cái gì cố ý để raw, cái gì cần bạn quyết.
   **Publish luôn là việc của người**, skill không publish.
 
-### Dữ liệu riêng của từng team
+### Dữ liệu sản phẩm: bộ nhớ nằm trong repo của team
 
-Mỗi kit và mỗi product file có **một file dữ liệu** (copy từ `_template.md`). Trong đó ghi file key,
-danh sách page, quyết định đặt tên, platform, người duyệt. File của UpS (`ups-ui-kit.md`,
-`ups-product-2026.md`) vừa là dữ liệu thật của UpS, vừa là **ví dụ mẫu** đã điền đầy đủ. Skill chỉ đọc
-file dữ liệu của file Figma đang làm việc, nên dữ liệu UpS không bao giờ lẫn vào file của team khác.
+Bộ skill **không chứa dữ liệu của sản phẩm nào**. Mỗi team giữ dữ liệu sản phẩm trong **repo thiết kế
+của mình**, tức là repo mà team mở Claude để làm việc, ở thư mục `upbase/<sản phẩm>/`:
+
+```
+<repo của team>/
+  upbase/
+    uplms/
+      kit-build.md      sổ tay dựng kit: file key, platform, người duyệt, các quyết định, đã dựng gì, vì sao
+      kit-usage.md      hướng dẫn dùng kit trên màn hình: vùng màn hình → component nào, set property gì
+      product-file.md   file thiết kế sản phẩm: page, các màn đã dựng, phần shell chung, token, icon
+      gap-log.md        những gì kit chưa làm được cho màn hình
+```
+
+**Vì sao để trong repo của team chứ không để trong skill:** các file này là **bộ nhớ sau mỗi lần
+build**, và skill tự cập nhật chúng ở cuối mỗi phiên. Để trong repo thì cả team dùng chung một bản qua
+git, có lịch sử để quay lại khi cần, và việc cập nhật bộ skill không bao giờ đụng tới dữ liệu.
+
+**Skill nào đọc và ghi file nào:**
+
+| File | `ui-kit-builder` | `product-screen-builder` | `design-system-builder` |
+|---|---|---|---|
+| `kit-build.md` | đọc ở Step 0, ghi *Status* và *Notes* ở cuối phiên | — | đếm các thư mục `upbase/*/` để biết kit nào bị ảnh hưởng khi có thay đổi breaking |
+| `kit-usage.md` | ghi khi thêm hoặc đổi component (key, property, cách dùng) | đọc ở Step 0 và 3; ghi khi người dùng chốt một quy tắc mới | — |
+| `product-file.md` | — | đọc ở Step 0; cập nhật *Screen register* ở cuối phiên | — |
+| `gap-log.md` | đọc trước khi đề xuất; đánh dấu đã sửa | ghi gap mới khi kit chưa làm được | — |
+
+`gap-log.md` và `kit-usage.md` là **chỗ hai skill bàn giao cho nhau**. Dựng màn hình mà gặp chỗ kit
+thiếu thì ghi gap, người dựng kit sửa rồi đánh dấu. Người dựng kit thêm component thì ghi cách dùng, và
+người dựng màn hình đọc để dùng đúng.
+
+**Skill tìm thư mục như thế nào:** theo **file key**. `ui-kit-builder` tìm key của kit trong
+`upbase/*/kit-build.md`, còn `product-screen-builder` tìm key của product file trong
+`upbase/*/product-file*.md`. Không tìm thấy thì skill **dừng** và đề nghị đăng ký, không đoán. Vì vậy
+**phải mở Claude trong repo của team.** Mở ở thư mục khác thì skill sẽ báo "chưa đăng ký".
+
+**Giữ bộ nhớ gọn và đúng:**
+- Chỉ ghi trạng thái hiện tại và các quyết định. Lịch sử theo ngày nằm ở trang Changelog trong Figma.
+- Không chép những gì đọc được từ Figma (ví dụ danh sách page). Bản chép sẽ cũ dần; skill đọc lại
+  từ file khi cần.
+- Bài học đúng với **mọi** kit thì chuyển lên `ui-kit-builder/references/patterns.md` qua pull
+  request, để mọi team cùng có.
+
+**Ví dụ:** `skills/_shared/product-template/EXAMPLE.md` là bản rút gọn đã điền giá trị của UpS. Bản đầy
+đủ của UpS nằm ở `examples/ups/` trong repo skill.
 
 ---
 
@@ -80,11 +121,12 @@ Mỗi luồng ghi: bạn nói gì → skill đọc file nào, ở bước nào �
 
 > *"Thêm Select vào kit của mình"* (kèm link kit)
 
-1. `ui-kit-builder/SKILL.md` được nạp. Step 0 tìm file dữ liệu theo file key (`kits/<kit>.md`).
+1. `ui-kit-builder/SKILL.md` được nạp. Step 0 tìm `upbase/<sản phẩm>/kit-build.md` theo file key
+   của kit.
 2. Step 1 chạy `_shared/scripts/preflight.js` ở mode `kit`: đúng file chưa, UpBase có truy cập được
    không, có sót lại gì từ lần chạy trước không.
 3. Step 2 liệt kê component **trong kit trước**, rồi mới tìm trong UpBase qua plugin. Gặp tên khác thì
-   tra `_shared/references/upbase-library.md` (ví dụ Combobox → `Select`). Đọc gap log của kit.
+   tra `_shared/references/upbase-library.md` (ví dụ Combobox → `Select`). Đọc `gap-log.md`.
 4. Step 3 xác định đây là **wrapper**.
 5. **Step 4 dừng lại với một đề xuất**: tên, page, số variant, property, platform.
 6. Sau khi bạn duyệt: Step 5 đọc `references/wrapper-pattern.md`, `references/patterns.md` và
@@ -92,8 +134,8 @@ Mỗi luồng ghi: bạn nói gì → skill đọc file nào, ở bước nào �
 7. Step 6 chạy `scripts/audit-wrappers.js` và các audit trong `_shared/scripts/`, sweep density.
 8. Step 7 viết description theo `_shared/references/conventions.md` và dựng page theo
    `references/page-template.md`.
-9. Step 8 ghi changelog bằng `_shared/scripts/changelog/changelog.js`, cập nhật bảng *Status* trong
-   file dữ liệu kit, rồi báo cáo.
+9. Step 8 ghi changelog bằng `_shared/scripts/changelog/changelog.js`, cập nhật *Status* trong
+   `kit-build.md`, thêm cách dùng component vào `kit-usage.md`, cập nhật `gap-log.md`, rồi báo cáo.
 
 **Bạn nhận được:** một component mới trong kit, đã verify, có description đầy đủ, page đã dựng, có
 entry changelog *Pending publish*. Việc còn lại của bạn là publish kit.
@@ -111,18 +153,19 @@ cần, skill sẽ đề nghị đưa lên UpBase thay vì làm trong kit.
 
 > *"Dựng lại màn hình này từ ảnh"* (kèm link product file)
 
-1. `product-screen-builder/SKILL.md`. Step 0 tìm `references/products/<product>.md` và kit map
-   `references/kit-maps/<kit>.md`, rồi chọn mode **Rebuild** và đọc `references/rebuild-mode.md`.
+1. `product-screen-builder/SKILL.md`. Step 0 tìm `upbase/<sản phẩm>/product-file.md` theo file key,
+   đọc thêm `kit-usage.md` bên cạnh, rồi chọn mode **Rebuild** và đọc `references/rebuild-mode.md`.
 2. Step 1 chạy `scripts/preflight-product.js`.
 3. Step 2 chụp ảnh tham chiếu và ghi lại đúng từng chữ, từng trạng thái.
-4. Step 3 ánh xạ từng vùng của màn hình sang component trong kit theo kit map. Thứ kit không làm được
-   là một **gap** và được ghi vào gap log.
+4. Step 3 ánh xạ từng vùng của màn hình sang component trong kit theo `kit-usage.md`. Thứ kit không
+   làm được là một **gap**; kiểm tra `gap-log.md` trước, vì gap có thể đã có cách xử lý.
 5. **Step 4 dừng lại với một đề xuất**: frame đích, clone từ màn nào, anatomy, gap, câu hỏi.
 6. Step 5 build theo 4 giai đoạn (đọc `references/build-mechanics.md`), dùng `scripts/helpers.js` và
    token lấy bằng `scripts/harvest-tokens.js`.
 7. Step 6 chạy `scripts/walk-integrity.js` và `scripts/check-overrides.js`, đo khoảng cách các cạnh,
    rồi so ảnh với tham chiếu.
-8. Step 7 cập nhật gap log và *Screen register*, ghi changelog, báo cáo.
+8. Step 7 ghi gap mới vào `gap-log.md`, cập nhật *Screen register* trong `product-file.md`, ghi
+   changelog, báo cáo.
 
 **Bạn nhận được:** một màn hình chỉ gồm instance của kit, kèm danh sách mọi chỗ khác so với ảnh và lý
 do.
@@ -133,7 +176,7 @@ do.
 
 Giống luồng C nhưng ở mode **Proposal** (`references/proposal-mode.md`): phê bình màn hiện tại, tìm
 tham khảo trên Mobbin, đề xuất chỉ dùng những gì kit đã có, rồi build vào section Proposal, đặt cạnh
-bản dựng lại. Kết quả quan trọng nhất là danh sách *"chỗ kit giới hạn thiết kế"*, được đưa vào gap log.
+bản dựng lại. Kết quả quan trọng nhất là danh sách *"chỗ kit giới hạn thiết kế"*, được đưa vào `gap-log.md`.
 
 ### Luồng E: Vẽ anatomy
 
@@ -166,13 +209,32 @@ gì khi nhận bản publish.
    hoặc bớt một axis mà nhìn canvas không thấy được.
 4. Xem bảng *Behaviour changes* trong `_shared/references/upbase-known-issues.md`.
 
-### Luồng H: Đăng ký kit hoặc product của team mới
+### Luồng H: Đăng ký sản phẩm của team mới (ví dụ uplms)
 
-> *"Đăng ký kit của mình"* (kèm link)
+Làm **một lần**, trước lần build đầu tiên, ở thư mục gốc của repo thiết kế của team:
 
-Skill copy `ui-kit-builder/kits/_template.md` (và `product-screen-builder/references/products/_template.md`,
-`kit-maps/_template.md`), điền phần dữ kiện bằng cách đọc file Figma, còn phần **quyết định** (platform,
-cách đặt tên, người duyệt) thì **hỏi bạn**. Chi tiết: README › *Registering your kit*.
+1. **Tạo thư mục dữ liệu:**
+   ```bash
+   npx github:datvu98/upbase-design-skills init uplms
+   ```
+   Lệnh này tạo `upbase/uplms/` gồm 4 file template. Thư mục đã tồn tại thì lệnh từ chối, không ghi đè.
+2. **Điền phần đầu**, tự điền hoặc nhờ Claude: mở Claude trong repo và nói *"đăng ký kit `<link kit>`
+   và product file `<link product>` cho uplms"*.
+   - `kit-build.md`: **File key** của kit (đây là thứ đăng ký kit), platform, người duyệt, và bảng
+     *Decisions to make once* (cách đặt tên wrapper, page shape, template page, docs header).
+   - `product-file.md`: **File key** của product file, **Kit probe key** (key của một component bất kỳ
+     đã publish trong kit, ví dụ Button), trang Changelog.
+   - Claude đọc được các dữ kiện từ Figma, nhưng **các quyết định thì Claude hỏi**, không tự đoán.
+3. **Tạo trang trống** `_Changelog` trong file kit và `Changelog` trong product file.
+4. **Commit `upbase/uplms/`** để cả team dùng chung.
+
+`kit-usage.md` và `gap-log.md` để trống lúc đầu và đầy dần khi team làm việc. Muốn xem bản đã điền
+thì đọc `skills/_shared/product-template/EXAMPLE.md`.
+
+**Đã cài bản ≤ 0.3 và từng đặt file dữ liệu bên trong thư mục skill?** Khi cập nhật lên 0.4, trình
+cài chuyển các file đó ra `_rescued-data/` trong thư mục skill (không xoá) và in ra danh sách. Chuyển
+chúng vào `upbase/<sản phẩm>/` theo tên mới: file kit → `kit-build.md`, kit map → `kit-usage.md`,
+product file → `product-file.md`. Sau đó commit.
 
 ---
 
@@ -346,6 +408,43 @@ hàm hoặc chỉnh khối `CONFIG` ở đầu file.
   một version có tên trong lịch sử phiên bản của file. Chạy lại với cùng ngày và tiêu đề thì entry được
   thay thế, không bị nhân đôi.
 
+#### `product-template/kit-build.md`
+- **Vì sao tồn tại:** khuôn cho sổ tay dựng kit của một sản phẩm.
+- **Giải quyết:** skill phải đoán quyết định của team (platform, cách đặt tên, page shape); mỗi phiên
+  phải dò lại từ đầu xem kit đã có gì.
+- **Dùng khi:** đăng ký sản phẩm (luồng H). `init` copy file này sang `upbase/<sản phẩm>/kit-build.md`.
+- **Kết quả:** một file có **File key** của kit (thứ đăng ký kit), bảng *Decisions to make once* kèm
+  đáp án của UpS để tham khảo, *Page triage*, *Local scaffolding*, *Status* và *Notes*.
+
+#### `product-template/kit-usage.md`
+- **Vì sao tồn tại:** khuôn cho hướng dẫn dùng kit trên màn hình.
+- **Giải quyết:** chọn sai component, dùng sai property key, mỗi màn cấu hình component một kiểu.
+- **Dùng khi:** đăng ký sản phẩm. Ban đầu gần như trống, đầy dần khi dựng màn và khi kit có component
+  mới.
+- **Kết quả:** bảng vùng màn hình → component, quy tắc table (căn cột, độ rộng; chưa chốt thì dùng
+  quy tắc của UpS), bảng key và property key.
+
+#### `product-template/product-file.md`
+- **Vì sao tồn tại:** khuôn cho dữ liệu của một file thiết kế sản phẩm.
+- **Giải quyết:** mỗi phiên phải dò lại page, section, màn đã dựng, token dùng được, icon key.
+- **Dùng khi:** đăng ký sản phẩm. Sản phẩm có nhiều file thiết kế thì mỗi file một bản
+  (`product-file-<tên>.md`).
+- **Kết quả:** **File key** của product file (thứ đăng ký nó), *Kit probe key*, page và section,
+  *Screen register*, phần shell chung, token đã harvest, và icon.
+
+#### `product-template/gap-log.md`
+- **Vì sao tồn tại:** khuôn cho nhật ký những gì kit chưa làm được.
+- **Giải quyết:** màn hình vẽ tay thứ kit thiếu, rồi không ai biết để sửa kit.
+- **Dùng khi:** đăng ký sản phẩm.
+- **Kết quả:** định dạng entry `GAP-nnn` với các trạng thái open → proposed → in kit → published (hoặc
+  upstream, wontfix).
+
+#### `product-template/EXAMPLE.md`
+- **Vì sao tồn tại:** cho người điền template thấy một bản đã điền xong.
+- **Giải quyết:** không biết điền một ô thế nào; lỡ copy nguyên giá trị của UpS.
+- **Dùng khi:** đang điền template. `init` **không** copy file này.
+- **Kết quả:** bản rút gọn của cả 4 file với giá trị thật của UpS, kèm lời nhắc không copy giá trị.
+
 ### 3.2 `skills/ui-kit-builder/`
 
 #### `SKILL.md`
@@ -354,28 +453,6 @@ hàm hoặc chỉnh khối `CONFIG` ở đầu file.
   override atom trong kit).
 - **Kết quả:** lộ trình Step 0–8 với điểm dừng ở Step 4, bảng phân biệt các skill, và bảng "mở file nào
   ở bước nào".
-
-#### `kits/_template.md`
-- **Vì sao tồn tại:** khuôn để đăng ký một kit mới.
-- **Giải quyết:** skill phải đoán quyết định của team (platform, cách đặt tên, page shape).
-- **Dùng khi:** đăng ký kit (luồng H). Team điền, skill đọc ở Step 0.
-- **Kết quả:** một file `kits/<kit>.md` có file key (chính là thứ đăng ký kit), bảng *Decisions to make
-  once* kèm đáp án của UpS để tham khảo, page list, triage, Status và Notes.
-
-#### `kits/_gap-log-template.md`
-- **Vì sao tồn tại:** khuôn cho nhật ký "kit chưa làm được gì cho màn hình".
-- **Giải quyết:** màn hình vẽ tay thứ kit thiếu, rồi không ai biết để sửa kit.
-- **Dùng khi:** đăng ký kit. Copy sang repo thiết kế của team, **không** để trong thư mục skill.
-- **Kết quả:** file gap log có định dạng entry `GAP-nnn` và các trạng thái open → proposed → in kit →
-  published.
-
-#### `kits/ups-ui-kit.md`
-- **Vì sao tồn tại:** dữ liệu sống của UpS UI Kit, đồng thời là ví dụ mẫu của `_template.md`.
-- **Giải quyết:** mỗi phiên làm việc với UpS phải dò lại file từ đầu. Ngoài ra lưu lịch sử từng quyết
-  định (vì sao một wrapper có kích thước như vậy, flag audit nào được chấp nhận).
-- **Đọc khi:** làm việc trên UpS UI Kit, hoặc khi không rõ một ô trong template nên điền thế nào.
-- **Kết quả:** file key, page list (đọc lại ngày 2026-10-14), triage, các quyết định, trạng thái và
-  ghi chú theo từng component.
 
 #### `references/patterns.md`
 - **Vì sao tồn tại:** các bài học đúng với **mọi** kit, rút ra từ quá trình dựng UpS.
@@ -426,7 +503,7 @@ hàm hoặc chỉnh khối `CONFIG` ở đầu file.
 - **Giải quyết:** wrapper không expose, sizing sai, thiếu description hoặc block `Source`, và **axis
   drift** sau khi UpBase thay đổi (không thấy được trên canvas).
 - **Chạy khi:** Step 6, và sau mỗi lần nhận bản publish của UpBase. `ONLY_PAGE` để chọn một page.
-- **Đạt khi:** không có issue, trừ những flag mà file dữ liệu kit ghi là chấp nhận.
+- **Đạt khi:** không có issue, trừ những flag mà `kit-build.md` ghi là chấp nhận.
 - **Output mẫu:** chạy với `ONLY_PAGE = '❖ Segmented'`, 11 ms:
   ```json
   { "file": "UpS UI Kit",
@@ -438,7 +515,7 @@ hàm hoặc chỉnh khối `CONFIG` ở đầu file.
       "nested": { "layerName": "Segmented", "isExposedInstance": true, "forwardedProps": 4 } } ] }
   ```
   `ok: false` ở đây chỉ do quy ước đặt tên của UpS (wrapper giữ đúng tên UpBase). Đây là flag đã được
-  chấp nhận và ghi trong file dữ liệu kit. Các phần quan trọng đều đạt: `drifted: 0`,
+  chấp nhận và ghi trong `kit-build.md`. Các phần quan trọng đều đạt: `drifted: 0`,
   `isExposedInstance: true`, key nguồn đúng.
 
 ### 3.3 `skills/product-screen-builder/`
@@ -477,26 +554,11 @@ hàm hoặc chỉnh khối `CONFIG` ở đầu file.
 - **Đọc khi:** trước lần ghi đầu tiên (Step 5).
 - **Kết quả:** các bẫy theo nhóm (lệnh, slot, property, text, đo, layout, token, icon, ảnh, dọn dẹp).
 
-#### `references/products/_template.md` và `references/products/ups-product-2026.md`
-- **Vì sao tồn tại:** mỗi product file có một file dữ liệu. File của UpS vừa là dữ liệu thật, vừa là
-  ví dụ mẫu.
-- **Giải quyết:** dò lại page, section, màn đã dựng, token dùng được, icon key ở mỗi phiên.
-- **Đọc khi:** Step 0, luôn luôn.
-- **Kết quả:** file key (thứ đăng ký product), *Kit probe key*, đường dẫn gap log, page và section,
-  *Screen register*, phần shell chung, token đã harvest, và icon.
-
-#### `references/kit-maps/_template.md` và `references/kit-maps/ups-ui-kit.md`
-- **Vì sao tồn tại:** bản đồ "vùng màn hình → component kit nào, set property gì".
-- **Giải quyết:** chọn sai component, dùng sai property key, cấu hình khác với các màn khác.
-- **Đọc khi:** Step 0 và Step 3.
-- **Kết quả:** bảng vùng → component, quy tắc table (căn cột, độ rộng), và key, property key của từng
-  component.
-
 #### `scripts/preflight-product.js` 🟢
 - **Vì sao tồn tại:** preflight cho product file.
 - **Giải quyết:** ghi nhầm file, kit không truy cập được (màn hình dựng ra bị thủng lỗ), build trùng
   sau khi timeout.
-- **Chạy khi:** lệnh đầu tiên của mọi lần build màn hình. Lấy `kitProbeKey` từ file dữ liệu product.
+- **Chạy khi:** lệnh đầu tiên của mọi lần build màn hình. Lấy `kitProbeKey` từ `product-file.md`.
   Script import một component của kit vào cache, không đặt gì lên canvas.
 - **Đạt khi:** `blocked: false`.
 - **Output mẫu:** chạy trên UpS Product 2026, 186 ms:
@@ -549,7 +611,7 @@ hàm hoặc chỉnh khối `CONFIG` ở đầu file.
   của UpBase.
 - **Giải quyết:** phải dùng số raw cho khoảng cách và màu nền của frame tự tạo.
 - **Chạy khi:** Step 5, hoặc khi một id trong bảng *Harvested tokens* không resolve được nữa.
-- **Kết quả:** danh sách variable (tên, giá trị, id) tìm thấy dưới một node, để ghi vào file dữ liệu.
+- **Kết quả:** danh sách variable (tên, giá trị, id) tìm thấy dưới một node, để ghi vào `product-file.md` › *Harvested tokens*.
 - **Output mẫu:** `harvestTokens(Kho hàng 01, /padding|margin|colorBg/)`, 331 ms:
   ```json
   { "scanned": 204, "matched": 34,
@@ -632,7 +694,8 @@ hàm hoặc chỉnh khối `CONFIG` ở đầu file.
 | `SETUP.md` | cấu hình MCP, Desktop Bridge, token, quyền | máy sẵn sàng để chạy skill |
 | `GUIDE.md` | file này | hiểu từng file và từng luồng |
 | `CHANGELOG.md` | lịch sử thay đổi **của skill** (thay đổi trong Figma nằm ở trang Changelog của từng file) | biết bản cập nhật vừa đổi gì |
-| `package.json` · `bin/install.js` | trình cài `npx` | cài và cập nhật vào `~/.claude/skills` hoặc `.claude/skills`. Ghi đè file của repo, giữ file của team, xoá file repo đã bỏ, và tự chuyển từ bản 0.1 |
+| `package.json` · `bin/install.js` | trình cài `npx` | **cài/cập nhật** skill vào `~/.claude/skills` hoặc `.claude/skills`: ghi đè file của repo, xoá file repo đã bỏ, chuyển dữ liệu cũ (≤ 0.3) ra `_rescued-data/`. **`init <sản phẩm>`** tạo `upbase/<sản phẩm>/` từ template |
+| `examples/ups/` | dữ liệu đầy đủ của UpS (`kit-build.md`, `kit-usage.md`, `product-file.md`) theo cấu trúc mới, **không được cài** | ví dụ thật cho người điền template. Với UpS: copy sang `upbase/ups/` trong repo UpBase Design System khi chuyển sang bản 0.4 |
 | `bin/check-guide.js` | kiểm tra GUIDE.md có đủ mục cho mọi file trong `skills/` | báo file nào chưa có trong hướng dẫn |
 | `evals/*.json` · `evals/README.md` | các prompt test dry-run cho từng skill | chạy lại sau mỗi lần sửa skill để biết có làm skill kém đi không |
 
@@ -657,12 +720,48 @@ Ba quy tắc cho mọi lần chạy:
 
 ## 5. Bảo trì bộ skill
 
-- **Mỗi team chỉ sửa file dữ liệu của mình**: `kits/<kit>.md`, `products/<product>.md`,
-  `kit-maps/<kit>.md`. File của repo bị ghi đè mỗi lần cập nhật.
-- **Bài học đúng với mọi kit** → `ui-kit-builder/references/patterns.md`. **Bẫy của API** →
+**Dữ liệu sản phẩm** (`upbase/<sản phẩm>/` trong repo của team)
+- Team sở hữu và commit. Skill cập nhật ở cuối mỗi phiên; xem diff trước khi commit như với code.
+- Hai người cùng sửa một file thì xử lý conflict như với code bình thường. Các file được chia theo vai
+  trò nên conflict hiếm khi xảy ra.
+
+**Bộ skill** (repo `upbase-design-skills`)
+- **Không sửa file trong thư mục skill đã cài.** Lần cập nhật sau sẽ ghi đè.
+- **Bài học đúng với mọi kit** → `ui-kit-builder/references/patterns.md`. **Bẫy của Figma API** →
   `_shared/references/figma-api-gotchas.md`. **Lỗi của UpBase** →
-  `_shared/references/upbase-known-issues.md`. Gửi qua pull request.
-- **Thêm hoặc đổi tên file trong `skills/`** → thêm mục tương ứng vào phần 3 của file này, rồi chạy
+  `_shared/references/upbase-known-issues.md`. Gửi bằng pull request.
+- **Thêm hoặc đổi tên file trong `skills/`** → thêm mục vào phần 3 của file này, rồi chạy
   `node bin/check-guide.js`.
-- **Sau khi sửa một skill** → chạy các prompt trong `evals/`, tăng `version` trong `package.json`, ghi
-  `CHANGELOG.md`.
+- **Sau khi sửa một skill** → chạy các prompt trong `evals/` (từ một project có `upbase/ups/`, xem
+  `evals/README.md`), tăng `version` trong `package.json`, ghi `CHANGELOG.md`.
+
+## 6. Câu hỏi thường gặp
+
+**Skill báo "chưa đăng ký" dù đã đăng ký.**
+Kiểm tra ba điều: (1) Claude có đang mở trong repo của team không (phải thấy thư mục `upbase/` ở gốc);
+(2) **File key** trong `kit-build.md` / `product-file.md` có đúng 22 ký tự lấy từ link không; (3) file
+đã được commit và kéo về máy chưa.
+
+**Cập nhật bộ skill có làm mất dữ liệu không?**
+Không. Dữ liệu nằm trong repo của team, còn trình cài chỉ ghi vào thư mục skill. Riêng người từng để
+dữ liệu trong thư mục skill (bản ≤ 0.3): trình cài chuyển file ra `_rescued-data/`, không xoá.
+
+**Có cần đăng ký UpBase Design System không?**
+Không. `design-system-builder` nhận ra file UpBase qua key cố định (`BoGaG48v9BfY7LkMtFs4zh`).
+
+**Một sản phẩm có nhiều file thiết kế thì sao?**
+Mỗi file một bản `product-file-<tên>.md` trong cùng thư mục, dùng chung `kit-usage.md` và
+`gap-log.md`.
+
+**Claude đề xuất xong rồi dừng, không làm tiếp?**
+Đó là thiết kế có chủ đích: mọi skill dừng ở bước đề xuất chờ duyệt. Trả lời "ok" hoặc nêu chỗ cần
+sửa. Có thể miễn bước đề xuất cho một đợt dựng màn ("build luôn, không cần proposal"), nhưng chỉ có
+hiệu lực cho đợt đó.
+
+**Desktop Bridge báo "Cannot connect" hoặc mọi lệnh đều timeout.**
+Figma tạm dừng plugin khi tab mất focus, hoặc một lệnh trước bị kẹt. Đóng rồi mở lại Desktop Bridge
+trong đúng file đó. Không có gì bị mất.
+
+**Muốn sửa một component của UpBase cho sản phẩm của mình.**
+Không override trong kit, vì override không sống được ở product file. Trao đổi với người phụ trách
+UpBase. Nếu đồng ý thì dùng `design-system-builder` (luồng F).

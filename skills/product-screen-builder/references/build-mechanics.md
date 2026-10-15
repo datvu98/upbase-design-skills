@@ -160,7 +160,7 @@ index, same properties) in a separate call. Then prove it with `scripts/walk-int
 - `getLocalVariableCollectionsAsync()` is empty and the kit publishes no variables, so nothing can
   be imported. But every kit instance carries UpBase variables, and `getVariableByIdAsync(id)`
   resolves them — **harvest** ids from bound variables (`scripts/harvest-tokens.js`) and bind with
-  `setBoundVariable` / `setBoundVariableForPaint`. The product data file lists the ones found so far.
+  `setBoundVariable` / `setBoundVariableForPaint`. `upbase/<product>/product-file.md` lists the ones found so far.
 - Bind every spacing you set (`itemSpacing`, padding). `0` gaps between flush items are fine raw.
 - If a needed token isn't reachable (e.g. `colorBgMask`), use the antd value raw and log a gap.
 

@@ -1,6 +1,6 @@
 ---
 name: ui-kit-builder
-description: Build and change components in a product's UI kit — the Figma library a product team (UpS UI Kit, or any kit registered under kits/) publishes on top of the UpBase Design System. Use it to wrap a UpBase component into the kit ("add Select to our kit", "wrap Button"), compose a product component from several UpBase parts ("build the filter bar", "a KPI card for the dashboard", "table toolbar"), fix or extend an existing kit component, lay out a kit page, check a kit component after accepting a UpBase update, or register a new kit. Use it whenever someone pastes a kit file link or names a component they want in their kit, even without saying "kit". Do not use it for the UpBase Design System file itself (that is design-system-builder) or for product screens (that is product-screen-builder).
+description: Build and change components in a product's UI kit — the Figma library a product team (UpS UI Kit, uplms, or any kit registered in the repo's upbase/ folder) publishes on top of the UpBase Design System. Use it to wrap a UpBase component into the kit ("add Select to our kit", "wrap Button"), compose a product component from several UpBase parts ("build the filter bar", "a KPI card for the dashboard", "table toolbar"), fix or extend an existing kit component, lay out a kit page, check a kit component after accepting a UpBase update, or register a new kit. Use it whenever someone pastes a kit file link or names a component they want in their kit, even without saying "kit". Do not use it for the UpBase Design System file itself (that is design-system-builder) or for product screens (that is product-screen-builder).
 ---
 
 # UI kit builder
@@ -31,19 +31,25 @@ skills are in `${CLAUDE_SKILL_DIR}/../_shared/`, shortened here to `_shared/`.
 ## Step 0: Which kit?
 
 The kit is identified by the **file key** of the write target, the 22 characters after
-`figma.com/design/`. Find its data file:
+`figma.com/design/`. The product's data lives in **the repo you're running in**, not in this skill: one folder per
+product, `upbase/<product>/`, holding `kit-build.md`, `kit-usage.md`, `product-file.md` and
+`gap-log.md`. The team commits it, so everyone shares the same memory. Find the kit's folder:
 
 ```
-grep -l "<file key>" ${CLAUDE_SKILL_DIR}/kits/*.md
+grep -l "<file key>" upbase/*/kit-build.md
 ```
 
-- **One match**: read it now. It holds the kit's key, pages, platform reach, owner, and the
-  decisions this kit has made (naming, page shape). Where it records a decision, it beats any example
-  in this skill.
-- **No match**: the kit isn't registered. Stop, and offer to register it with the user. Copy
-  `kits/_template.md` to `kits/<kit-slug>.md` and fill it **with their answers**. The *Decisions to
-  make once* table is theirs to decide. Never borrow `kits/ups-ui-kit.md` for another kit: its node
-  ids and conventions are wrong anywhere else.
+- **One match**: read that `kit-build.md` now. It holds the kit's key, platform reach, owner, and
+  the decisions this kit has made (naming, page shape). Where it records a decision, it beats any
+  example in this skill. The other files in the folder are opened at the steps that need them.
+- **No match**: the kit isn't registered. Stop and offer to register it with the user. Run
+  `npx github:datvu98/upbase-design-skills init <product>`, or copy
+  `_shared/product-template/` to `upbase/<product>/`, then fill `kit-build.md` **with their
+  answers**: the *Decisions to make once* table is theirs to decide.
+  `_shared/product-template/EXAMPLE.md` shows UpS's answers for reference. Never copy UpS's values
+  into another kit: its node ids and conventions are wrong anywhere else.
+- **No `upbase/` folder at all**: you are probably not running in the team's repo. Ask where it is
+  before registering anything.
 - **The key is UpBase's own (`BoGaG48v9BfY7LkMtFs4zh`)**: wrong skill. Use `design-system-builder`.
 
 ## Step 1: Pin the file and run preflight
@@ -88,7 +94,7 @@ for (const p of figma.root.children)
 return hits;
 ```
 
-Also read the kit's **gap log** (path in the data file) for the component you're about to build.
+Also read the kit's **`gap-log.md`** for the component you're about to build.
 Product screens may already have hit this need, logged a workaround, or proposed a shape. Check the
 product file's recent Changelog entries too if the request comes from a screen.
 
@@ -113,7 +119,7 @@ addon before/after a field → `Pre Tab` / `Post Tab` on `Input`. The full table
 The fourth row is a gate. A generic control invented in one kit is invisible to every other product
 and gets rebuilt elsewhere. An atom's padding, colour or indent overridden on nested UpBase instances
 doesn't survive in product files (`references/patterns.md` › *Fix atoms upstream*). If the kit ships
-a stopgap anyway, say so in its description and log it in the kit's gap log.
+a stopgap anyway, say so in its description and log it in the kit's `gap-log.md`.
 
 ## Step 4: Propose, then stop
 
@@ -126,7 +132,7 @@ Post the proposal **in chat** and wait for the kit owner's approval before creat
 **Variants**: axes × options = N per set; before → after, total. Push everything else into
   booleans, swaps, slots and text: they cost zero variants
 **Properties**: booleans, swaps, slots, text
-**Platform**: Web / Native lines (from the data file), any breakpoint behaviour
+**Platform**: Web / Native lines (from `kit-build.md`), any breakpoint behaviour
 **Tokens**: non-obvious picks with measured contrast; every raw value you foresee, with the reason
 **Upstream**: anything that should be a UpBase change instead
 **Questions**: real decisions only, each with a recommendation
@@ -163,7 +169,7 @@ Follow `_shared/references/verification.md`, then run:
 
 | Script | Pass when |
 |---|---|
-| `scripts/audit-wrappers.js` | exposure, sizing, description and `Source` block are clean, with no axis drift. Flags the data file lists as accepted are fine |
+| `scripts/audit-wrappers.js` | exposure, sizing, description and `Source` block are clean, with no axis drift. Flags `kit-build.md` lists as accepted are fine |
 | `_shared/scripts/check-reflow.js` | every `overflowPx` is 0 |
 | `_shared/scripts/audit-coverage.js` | fills, text styles, effects and stroke width are at 100%; every other raw value is listed in the description |
 | `_shared/scripts/audit-platform.js` | the responsive lines use the allowed verbs and are proven by an example frame |
@@ -179,7 +185,7 @@ image after a change.
 - **Description**: the format in `_shared/references/conventions.md` › *The component description*,
   including the `Source` block for a wrapper.
 - **Page**: `references/page-template.md`, which is the kit layout, **not** UpBase's. Follow the page
-  shape your data file recorded (UpS: a wrapped atom gets 2 nodes, a composition gets the full
+  shape `kit-build.md` recorded (UpS: a wrapped atom gets 2 nodes, a composition gets the full
   template). Each kit owns its own `_Docs / Page Header`. UpBase's `_Docs / *` can't be imported.
 
 ## Step 8: Log and hand over
@@ -188,10 +194,12 @@ image after a change.
    `fileKey`, then call
    `addChangelogEntry({ date, title, author: '<your name> · with Claude', status: 'pending', sections, saveVersion: true })`.
    One entry per session. Cross-link a related UpBase entry under `related`.
-2. **Data file.** Update the kit's *Status* table and *Notes* in `kits/<kit>.md`. A lesson that would
+2. **`kit-build.md`.** Update the kit's *Status* table and *Notes*. A lesson that would
    hold in *any* kit goes to `references/patterns.md` instead, via a pull request to the skills repo.
-3. **Gap log.** Update any gap this work opened or closed (path in the data file).
-4. **Report** in three parts: **verified** (with numbers), **deliberately raw or omitted** (and why),
+3. **`kit-usage.md`.** Add or update the entry for every component you created or changed (key,
+   property keys, how to configure it), so screen builders can use it right away.
+4. **`gap-log.md`.** Update any gap this work opened or closed.
+5. **Report** in three parts: **verified** (with numbers), **deliberately raw or omitted** (and why),
    and **judgement calls** for the user. Then state the publish chain and which hops are outstanding:
 
    ```
@@ -211,8 +219,10 @@ run `scripts/audit-wrappers.js` across the kit: axis drift is invisible on the c
 
 | File | Open it at |
 |---|---|
-| `kits/<kit>.md` | Step 0, always |
-| `kits/_template.md` · `kits/_gap-log-template.md` | registering a kit |
+| `upbase/<product>/kit-build.md` (in the repo) | Step 0, always; update at Step 8 |
+| `upbase/<product>/gap-log.md` | Step 2; update at Step 8 |
+| `upbase/<product>/kit-usage.md` | Step 8, to record how to use what you built |
+| `_shared/product-template/` (+ `EXAMPLE.md`) | registering a kit |
 | `_shared/references/upbase-library.md` | Step 2 (vocabulary) and Step 5 (keys, resolution) |
 | `_shared/references/conventions.md` | Step 4: variants, states, contrast, tokens, description format |
 | `references/wrapper-pattern.md` | Step 5, wrappers |
@@ -222,4 +232,3 @@ run `scripts/audit-wrappers.js` across the kit: axis drift is invisible on the c
 | `_shared/references/tokens.md` | binding a token you haven't bound before |
 | `_shared/references/upbase-known-issues.md` | when something in UpBase looks wrong, and after an update |
 | `references/page-template.md` | Step 7 |
-| `kits/ups-ui-kit.md` | a filled-in example, when a template field is unclear |

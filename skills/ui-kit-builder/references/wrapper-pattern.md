@@ -30,7 +30,7 @@ removed and why — "the product never ships a ghost button" is a reason; "it fe
 
 ## Decision 2 — what is the nested layer called?
 
-> Record the answer in the kit's data file (*Decisions to make once*). UpS chose to keep UpBase's
+> Record the answer in `upbase/<product>/kit-build.md` (*Decisions to make once*). UpS chose to keep UpBase's
 > exact name for both wrapper and layer, and accepts the `audit-wrappers` flag that follows.
 
 The consumer's exposed property group is labelled with the **nested instance layer's name**, not the

@@ -1,12 +1,39 @@
 {
   "skill_name": "product-screen-builder",
-  "note": "Dry runs, read-only, stop at the proposal. Need Figma Desktop with the Bridge open in UpS Product 2026 and UpBeauty Website 2026.",
+  "note": "Dry runs: read-only, stop at the proposal. Run them from a project whose upbase/ups/ holds UpS's data (copy examples/ups/ there). Figma Desktop needs the Desktop Bridge open in UpS Product 2026 and one unregistered product file.",
   "evals": [
-    {"id": 1, "name": "proposal-mode-stops", "prompt": "Kho hàng 01 (danh sách kho) in UpS Product 2026 looks dated. Can you make a better version of it? https://www.figma.com/design/9FAdrUvuA7q0VExwsAxNu6/UpS-Product-2026",
-     "assertions": ["Identified UpS Product 2026 by key and read its data file and the UpS kit map", "Chose Proposal mode (not Rebuild) and read proposal-mode.md", "Found the existing faithful rebuild of Kho hàng 01 in the screen register before planning", "Posted a proposal using only existing kit components and stopped for approval; nothing created in Figma"]},
-    {"id": 2, "name": "unregistered-product-stops", "prompt": "rebuild the home page hero from our reference — https://www.figma.com/design/iYyuZdlgy1QcEHKgApQXRj/UpBeauty-Website-2026",
-     "assertions": ["Found no product data file for iYyuZdlgy1QcEHKgApQXRj", "Stopped and offered to register the product (and its kit map) from the templates", "Did not use UpS's data file, ids or harvested tokens", "Created or modified nothing in Figma"]},
-    {"id": 3, "name": "component-change-handed-off", "prompt": "On UpS Product 2026 the GridTable needs a 'Sticky header' toggle so the header stays visible when scrolling. Add that to GridTable.",
-     "assertions": ["Recognised this is a change to a kit component, not screen work", "Handed it to ui-kit-builder (with a proposal or gap-log entry) instead of building it in the product file", "Did not hand-draw or detach anything in the product file", "Created or modified nothing in Figma"]}
+    {
+      "id": 1,
+      "name": "proposal-mode-stops",
+      "prompt": "Kho hàng 01 (danh sách kho) in UpS Product 2026 looks dated. Can you make a better version of it? https://www.figma.com/design/9FAdrUvuA7q0VExwsAxNu6/UpS-Product-2026",
+      "assertions": [
+        "Identified UpS Product 2026 by key and read upbase/ups/product-file.md and kit-usage.md",
+        "Chose Proposal mode (not Rebuild) and read proposal-mode.md",
+        "Found the existing faithful rebuild of Kho hàng 01 in the screen register before planning",
+        "Posted a proposal using only existing kit components and stopped for approval; nothing created in Figma"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "unregistered-product-stops",
+      "prompt": "rebuild the home page hero from our reference — https://www.figma.com/design/iYyuZdlgy1QcEHKgApQXRj/UpBeauty-Website-2026",
+      "assertions": [
+        "Found no product data file for iYyuZdlgy1QcEHKgApQXRj",
+        "Stopped and offered to register the product (and its kit map) from _shared/product-template/",
+        "Did not use UpS's data, ids or harvested tokens",
+        "Created or modified nothing in Figma"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "component-change-handed-off",
+      "prompt": "On UpS Product 2026 the GridTable needs a 'Sticky header' toggle so the header stays visible when scrolling. Add that to GridTable.",
+      "assertions": [
+        "Recognised this is a change to a kit component, not screen work",
+        "Handed it to ui-kit-builder (with a proposal or gap-log entry) instead of building it in the product file",
+        "Did not hand-draw or detach anything in the product file",
+        "Created or modified nothing in Figma"
+      ]
+    }
   ]
 }
