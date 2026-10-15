@@ -2,6 +2,28 @@
 
 Changes to the skills themselves. Changes to the Figma files are on each file's `_Changelog` page.
 
+## 0.3.0 — 2026-10-15
+
+**Added**
+- **`GUIDE.md`** (Vietnamese): the overall picture, eight workflows end to end, and an entry for every
+  file and script. Each entry covers why it exists, what it solves, when it's read or run, and what it
+  produces. Script entries show output from real read-only runs on UpS UI Kit, UpS Product 2026 and
+  UpBase.
+- `bin/check-guide.js`: fails if a file under `skills/` has no entry in `GUIDE.md`.
+
+**Fixed** (found by the real runs)
+- `audit-coverage.js` now audits standalone components as well as component sets. A kit page used to
+  report "0/0" while checking none of its components. It also no longer switches the page the user
+  is looking at.
+- `audit-reuse.js`: `PAGE_MATCH` now narrows part B (too-weak components) too. Before, B always
+  scanned the whole file and reported other pages' findings.
+- `preflight-product.js`: the kit-probe import is raced at 8 s, so a hung import no longer times the
+  call out. On a hang it falls back to proving the kit is resident. The leftover check now searches
+  every page, not just the one open.
+- `audit-platform.js`: `Native: not in scope — …` is treated as a deliberate opt-out rather than an
+  invalid declaration (documented in `conventions.md`).
+- `kits/_template.md` gave the wrong copy path. `foundations.md` still carried the old file name.
+
 ## 0.2.0 — 2026-10-14
 
 The single `ub-component-creator` skill is split by file, so each skill's name says where it writes.

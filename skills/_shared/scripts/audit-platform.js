@@ -85,7 +85,10 @@ for (const { page, set } of sets) {
   const desc = set.descriptionMarkdown || set.description || '';
   const web = lineOf(desc, 'Web');
   const native = lineOf(desc, 'Native');
-  const has = v => typeof v === 'string' && v.trim() !== '';
+  // `Native: not in scope — Web only by decision` is a deliberate opt-out, not a declaration to
+  // validate. Counting it as "no known verb" and a platform mismatch flagged correct components.
+  const optOut = v => typeof v === 'string' && /^\s*not in scope\b/i.test(v);
+  const has = v => typeof v === 'string' && v.trim() !== '' && !optOut(v);
   if (!has(web) && !has(native)) continue;
 
   report.declared++;

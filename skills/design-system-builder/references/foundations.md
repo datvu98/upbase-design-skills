@@ -1,4 +1,4 @@
-# UpBase "Ant Design Components" foundations
+# UpBase Design System foundations
 
 > **Scope: design-system-builder** (`BoGaG48v9BfY7LkMtFs4zh`). This is the inventory of the source library and
 > every lookup below is **local**. A kit reads it for *what exists*, but must import by key rather

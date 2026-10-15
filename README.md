@@ -14,6 +14,9 @@ UpBase Design System ──publish──▶ <your> UI kit ──publish──▶
 design-system-builder               ui-kit-builder              product-screen-builder
 ```
 
+**New here? Read [GUIDE.md](GUIDE.md)** (Vietnamese): what every file and script is for, the problem
+it solves, when it's used and what its output looks like, plus the common workflows end to end.
+
 Day to day you'll mostly use `ui-kit-builder` and `product-screen-builder`. A change to the UpBase
 file reaches every product, so talk it through with the UpBase owner first, then use
 `design-system-builder`.
@@ -131,6 +134,8 @@ Overrides on nested UpBase instances don't survive in product files
 - **Lessons that hold for any kit** go to `ui-kit-builder/references/patterns.md`,
   `_shared/references/figma-api-gotchas.md` or `_shared/references/upbase-known-issues.md` by pull request, so every team gets them. Kit-specific
   lessons stay in your own data file.
+- Added or renamed a file under `skills/`? Add its entry to `GUIDE.md` section 3 and run
+  `node bin/check-guide.js`.
 - After changing a skill, run its dry-run prompts in `evals/` (see `evals/README.md`).
 - Bump `version` in `package.json` and add a `CHANGELOG.md` entry with every change to shipped files.
 
@@ -138,6 +143,8 @@ Overrides on nested UpBase instances don't survive in product files
 
 ```
 bin/install.js                 the npx installer
+bin/check-guide.js             fails if a file under skills/ has no entry in GUIDE.md
+GUIDE.md                       what every file is for (Vietnamese)
 evals/                         dry-run test prompts per skill (not installed)
 skills/
   design-system-builder/       the UpBase Design System file

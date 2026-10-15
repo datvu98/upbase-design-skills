@@ -181,3 +181,6 @@ silent default and is never written. Use only these verbs, so `audit-platform.js
 Separate entries with ` · `. Declare on the **root** component only; sub-parts inherit.
 
 If a behaviour doesn't fit a verb, raise it rather than inventing a phrase no script can match.
+
+A platform the component deliberately doesn't ship to is written as an opt-out, which
+`audit-platform.js` skips: `Native: not in scope — Web only by decision (<date>)`.

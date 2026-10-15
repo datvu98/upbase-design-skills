@@ -17,7 +17,8 @@ const PAGE_MATCH = /chat/i;   // ← set to the page you're auditing
 await figma.loadAllPagesAsync();
 const page = figma.root.children.find(p => PAGE_MATCH.test(p.name));
 if (!page) return { error: 'page not found — check PAGE_MATCH', pages: figma.root.children.map(p => p.name) };
-await figma.setCurrentPageAsync(page);
+// No setCurrentPageAsync: the pages are already loaded, and switching would move the page the
+// user is looking at — an audit must not change the UI.
 
 const tally = { fills: [0, 0], text: [0, 0], effects: [0, 0], stroke: [0, 0],
                 padding: [0, 0], gaps: [0, 0], radius: [0, 0] };
@@ -33,10 +34,13 @@ const insideInstance = n => {
 
 // Recursive: a two-level scan silently misses any set nested one frame deeper,
 // and reports a clean bill of health for a page it never opened.
+// Standalone COMPONENTs count too: kits are full of them (wrappers, Form Actions), and a
+// sets-only scan reported a kit page as "0/0 — clean" while auditing none of its components.
+// A COMPONENT met here is standalone, because the walk never descends into a set.
 const sets = [];
 const collect = (node, section) => {
   for (const c of (node.children || [])) {
-    if (c.type === 'COMPONENT_SET') sets.push({ section, set: c });
+    if (c.type === 'COMPONENT_SET' || c.type === 'COMPONENT') sets.push({ section, set: c });
     else if (['SECTION', 'FRAME', 'GROUP'].includes(c.type)) collect(c, section);
   }
 };
@@ -108,7 +112,7 @@ const fmt = ([a, b]) => `${a}/${a + b}` + (a + b ? ` (${Math.round(a / (a + b) *
 return {
   page: page.name,
   sets: sets.map(s => ({ section: s.section, name: s.set.name,
-    variants: s.set.children.length,
+    variants: s.set.type === 'COMPONENT_SET' ? s.set.children.length : 1,
     props: Object.keys(s.set.componentPropertyDefinitions).filter(k => k.includes('#')).length,
     described: (s.set.descriptionMarkdown || '').length > 0 })),
   coverage: {

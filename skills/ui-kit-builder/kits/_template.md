@@ -3,7 +3,7 @@
 > **Scope: ui-kit-builder, this kit only.** Constants for <Kit name>. Read it **before**
 > `SKILL.md`, which carries the procedure this fills in.
 >
-> **This is a template.** Copy it to `references/kit/<kit-slug>.md`, fill every `<…>`, delete the
+> **This is a template.** Copy it to `kits/<kit-slug>.md`, fill every `<…>`, delete the
 > guidance blockquotes. The **File key** row is what registers the kit — until it holds the real
 > key, the skill treats the kit as unregistered and stops. `kits/ups-ui-kit.md` is a
 > fully filled example — copy its shape, never its values.

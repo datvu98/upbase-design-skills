@@ -157,6 +157,9 @@ const note = (set, issue, detail) => tooWeak.push({ set, issue, detail });
 
 for (const { page, name, node } of allSets) {
   if (name.startsWith('_')) continue;
+  // PAGE_MATCH narrows B as well as A. Before, B always scanned the whole file, so a run narrowed to
+  // one page reported other pages' components as if they were that page's findings.
+  if (PAGE_MATCH && !PAGE_MATCH.test(page)) continue;
   const props = node.componentPropertyDefinitions || {};
   const axes = Object.entries(props).filter(([, d]) => d.type === 'VARIANT').map(([k]) => k.split('#')[0]);
   const hasText = Object.values(props).some(d => d.type === 'TEXT');

@@ -1,6 +1,6 @@
 {
   "name": "upbase-design-skills",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Claude Code skills for the UpBase design system: the UpBase file (design-system-builder), product UI kits (ui-kit-builder) and product screens (product-screen-builder) in Figma.",
   "private": true,
   "bin": {
