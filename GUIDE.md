@@ -66,6 +66,14 @@ Kiểm tra (chỉ đọc) → Đề xuất → DỪNG chờ duyệt → Build �
 
 ### Dữ liệu sản phẩm: bộ nhớ nằm trong repo của team
 
+> **Tóm tắt.** Bốn file trong `upbase/<sản phẩm>/` là "bộ nhớ" của sản phẩm mà AI đọc ở đầu mỗi
+> phiên và cập nhật ở cuối phiên. Nhờ đó các phiên sau không phải dò lại từ đầu, không làm trùng hay
+> làm trái những gì đã quyết, và các màn hình được dựng nhất quán với nhau. Trong đó có hai phần:
+> **các quyết định do team chốt** (platform, cách đặt tên, quy tắc table…), AI chỉ hỏi rồi ghi lại;
+> và **trạng thái do AI tự cập nhật** (đã dựng gì, màn nào xong, kit còn thiếu gì). File chỉ giữ những
+> gì đang đúng ở hiện tại, còn lịch sử thay đổi nằm ở trang Changelog trong Figma. Vì AI tự ghi vào các
+> file này, **hãy xem diff trước khi commit**, giống như review code.
+
 Bộ skill **không chứa dữ liệu của sản phẩm nào**. Mỗi team giữ dữ liệu sản phẩm trong **repo thiết kế
 của mình**, tức là repo mà team mở Claude để làm việc, ở thư mục `upbase/<sản phẩm>/`:
 
